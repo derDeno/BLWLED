@@ -26,6 +26,80 @@
             </div>
         </div>
     </nav><!-- End: Navbar Right Links (Dark) -->
+    <div class="container" style="margin-top: 20px;margin-bottom: 20px;">
+        <div class="row text-end" style="margin-bottom: 10px;">
+            <div class="col"><button class="btn btn-primary" id="btn-add-mapping" type="button">Add Mapping</button></div>
+        </div>
+        <h3 class="text-center text-secondary" id="no-mapping-yet">No mapping added yet...</h3>
+        <div class="card">
+            <div class="card-body">
+                <div class="row text-end">
+                    <div class="col text-start">
+                        <h4>Mapping Name</h4>
+                    </div>
+                    <div class="col"><button class="btn-close" id="btn-mapping-delete-1" type="button" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                </div>
+                <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-add-mapping">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Mapping</h4><button class="btn-close" id="btn-modal-mapping-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Add a mapping here. First select where to ouput, then select the ouput type and lastly select to what event it should be reacted..</p>
+                    <form id="form-mapping">
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output</span><select class="form-select" id="mapping-output">
+                                <option value="switch">Onboard Switch</option>
+                                <option value="wled">WLED</option>
+                                <optgroup label="Analog LED">
+                                    <option value="analog-color">LED Strip Color</option>
+                                    <option value="analog-r">Analog R</option>
+                                    <option value="analog-g">Analog G</option>
+                                    <option value="analog-b">Analog B</option>
+                                    <option value="analog-ww">Analog WW</option>
+                                    <option value="analog-cw">Analog CW</option>
+                                </optgroup>
+                                <optgroup label="GPIO Pins">
+                                    <option value="36">GPIO 36 / VP</option>
+                                    <option value="">GPIO 39 / VN</option>
+                                    <option value="34">GPIO 34</option>
+                                    <option value="35">GPIO 35</option>
+                                    <option value="32">GPIO 32</option>
+                                    <option value="33">GPIO 33</option>
+                                    <option value="25">GPIO 25</option>
+                                    <option value="26">GPIO 26</option>
+                                    <option value="27">GPIO 27</option>
+                                    <option value="23">GPIO 23</option>
+                                    <option value="22">GPIO 22</option>
+                                    <option value="21">GPIO 21</option>
+                                    <option value="19">GPIO 19</option>
+                                    <option value="14">GPIO 14</option>
+                                    <option value="12">GPIO 12</option>
+                                    <option value="13">GPIO 13</option>
+                                </optgroup>
+                            </select></div>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output Type</span><select class="form-select" id="mapping-output-type">
+                                <option value="color" selected="">Led Strip Color</option>
+                                <option value="on">On</option>
+                                <option value="off">Off</option>
+                                <option value="blink">Blink</option>
+                                <option value="sw-inpout">Switch Input</option>
+                            </select></div>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Event</span><select class="form-select" id="mapping-event">
+                                <option value="print-started">Print started</option>
+                                <option value="print-finished">Print Finished</option>
+                                <option value="print-failed">Print Failed</option>
+                            </select></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" id="btn-modal-mapping-save" type="button">Save</button></div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/app.js"></script>
 </body>

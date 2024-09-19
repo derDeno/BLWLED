@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		document.getElementById("alert-saved-switch").style.display = "none";
 	};
 
+    // Function to scroll to the top of the page
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
 	// Show a specific alert for a few seconds
 	const showAlert = (alertId) => {
 		const alert = document.getElementById(alertId);
@@ -14,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		setTimeout(() => {
 			alert.style.display = "none";
 		}, 3000);
+        scrollToTop();
 	};
 
 	// Form handling for WLED
@@ -87,37 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		document.getElementById("fieldset-signaltower").style.display = "block";
 	}
 
-	// Function to hide or show settings inputs based on checkbox status
-	function toggleSection(checkboxId, sectionClass) {
-		const checkbox = document.getElementById(checkboxId);
-		const section = document.querySelector(sectionClass);
-
-		// This will initially show or hide the section depending on the checkbox state
-		if (checkbox.checked) {
-			section.style.display = "block";
-		} else {
-			section.style.display = "none";
-		}
-
-		// Add event listener for checkbox toggle
-		checkbox.addEventListener("change", function () {
-			if (this.checked) {
-				section.style.display = "block";
-			} else {
-				section.style.display = "none";
-			}
-		});
-	}
-
-	// Toggle visibility of WLED settings fields (without hiding the checkbox)
-	toggleSection("wled-activate", ".wled-settings");
-
-	// Toggle visibility of Analog LED settings fields (without hiding the checkbox)
-	toggleSection("analog-activate", ".analog-settings");
-
-	// Toggle visibility of Switch settings fields (without hiding the checkbox)
-	toggleSection("switch-activate", ".switch-settings");
-
 	// Modal handling for reset
 	const resetButton = document.getElementById("btn-reset");
 	const modalResetButton = document.getElementById("btn-reset-modal");
@@ -143,6 +118,117 @@ document.addEventListener("DOMContentLoaded", function () {
 		);
 		modal.hide();
 	});
+
+	// Function to update the dropdowns based on selected values
+	function updateAnalogPinOptions() {
+		// Get the values of all pin dropdowns
+		const rPin = document.getElementById("analog-led-r");
+		const gPin = document.getElementById("analog-led-g");
+		const bPin = document.getElementById("analog-led-b");
+		const wwPin = document.getElementById("analog-led-ww");
+		const cwPin = document.getElementById("analog-led-cw");
+
+		const allPins = [rPin, gPin, bPin, wwPin, cwPin];
+
+		// Gather selected values (ignore "inactive")
+		const selectedValues = {
+			r: rPin.value !== "inactive" ? rPin.value : null,
+			g: gPin.value !== "inactive" ? gPin.value : null,
+			b: bPin.value !== "inactive" ? bPin.value : null,
+			ww: wwPin.value !== "inactive" ? wwPin.value : null,
+			cw: cwPin.value !== "inactive" ? cwPin.value : null,
+		};
+
+		// Reset all options to be enabled and reset label modification
+		allPins.forEach((pin) => {
+			Array.from(pin.options).forEach((option) => {
+				// Always keep "inactive" enabled
+				if (option.value !== "inactive") {
+					option.disabled = false;
+					// Remove any label modification
+					option.textContent = option.textContent.replace(/ - .*/, ""); // remove any existing " - Pin" text
+				}
+			});
+		});
+
+		// Disable selected options in other dropdowns and append the pin name to the label
+		Object.entries(selectedValues).forEach(([pinKey, selectedValue]) => {
+			if (selectedValue) {
+				allPins.forEach((pin) => {
+					if (pin.value !== selectedValue) {
+						const option = pin.querySelector(
+							`option[value="${selectedValue}"]`
+						);
+						if (option && option.value !== "inactive") {
+							option.disabled = true;
+							// Append the pin name to the label
+							option.textContent = `${
+								option.textContent
+							} - ${pinKey.toUpperCase()} Pin`;
+						}
+					}
+				});
+			}
+		});
+	}
+
+	// Function to initialize the analog settings dropdown functionality
+	function initializeAnalogPinControls() {
+		const rPin = document.getElementById("analog-led-r");
+		const gPin = document.getElementById("analog-led-g");
+		const bPin = document.getElementById("analog-led-b");
+		const wwPin = document.getElementById("analog-led-ww");
+		const cwPin = document.getElementById("analog-led-cw");
+
+		const allPins = [rPin, gPin, bPin, wwPin, cwPin];
+
+		// Add event listeners to update the options when a value is changed
+		allPins.forEach((pin) => {
+			pin.addEventListener("change", updateAnalogPinOptions);
+		});
+
+		// Initial call to update the options based on the default selections
+		updateAnalogPinOptions();
+	}
+
+	// Initialize the analog settings section if mode is LED Strip
+	const analogModeSelect = document.getElementById("analog-mode");
+	analogModeSelect.addEventListener("change", function () {
+		const selectedMode = analogModeSelect.value;
+		if (selectedMode === "strip") {
+			initializeAnalogPinControls();
+		}
+	});
+
+	// Initially check the mode and initialize if already on LED Strip
+	if (analogModeSelect.value === "strip") {
+		initializeAnalogPinControls();
+	}
+
+	// Function to hide or show settings inputs based on checkbox status
+	function toggleSection(checkboxId, sectionClass) {
+		const checkbox = document.getElementById(checkboxId);
+		const section = document.querySelector(sectionClass);
+
+		if (checkbox.checked) {
+			section.style.display = "block";
+		} else {
+			section.style.display = "none";
+		}
+
+		checkbox.addEventListener("change", function () {
+			if (this.checked) {
+				section.style.display = "block";
+			} else {
+				section.style.display = "none";
+			}
+		});
+	}
+
+	// Toggle visibility of settings based on activation checkboxes
+	toggleSection("wled-activate", ".wled-settings");
+	toggleSection("analog-activate", ".analog-settings");
+	toggleSection("switch-activate", ".switch-settings");
 
 	// Initially hide all alerts
 	hideAllAlerts();
