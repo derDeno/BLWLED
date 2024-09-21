@@ -1,5 +1,5 @@
-// Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", function () {
+	
 	// Hide all alerts initially
 	const hideAllAlerts = () => {
 		document.getElementById("alert-saved-wled").style.display = "none";
@@ -7,10 +7,98 @@ document.addEventListener("DOMContentLoaded", function () {
 		document.getElementById("alert-saved-switch").style.display = "none";
 	};
 
-    // Function to scroll to the top of the page
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+	// Function to save settings in local storage
+	function saveSettings() {
+		const settings = {
+			wled: {
+				activate: document.getElementById("wled-activate").checked,
+				count: document.getElementById("wled-count").value,
+				order: document.getElementById("wled-order").value,
+			},
+			analog: {
+				activate: document.getElementById("analog-activate").checked,
+				mode: document.getElementById("analog-mode").value,
+				led: {
+					r: document.getElementById("analog-led-r").value,
+					g: document.getElementById("analog-led-g").value,
+					b: document.getElementById("analog-led-b").value,
+					ww: document.getElementById("analog-led-ww").value,
+					cw: document.getElementById("analog-led-cw").value,
+				},
+				tower: {
+					r: document.getElementById("analog-tower-r").value,
+					g: document.getElementById("analog-tower-g").value,
+					b: document.getElementById("analog-tower-b").value,
+					ww: document.getElementById("analog-tower-ww").value,
+					cw: document.getElementById("analog-tower-cw").value,
+				},
+			},
+			switch: {
+				activate: document.getElementById("switch-activate").checked,
+				function: document.getElementById("switch-function").value,
+			},
+		};
+
+		// Save the settings as JSON string in local storage
+		localStorage.setItem("deviceSettings", JSON.stringify(settings));
+		console.log("Settings saved:", settings);
+	}
+
+	// Function to load settings from local storage
+	function loadSettings() {
+		const savedSettings = localStorage.getItem("deviceSettings");
+
+		if (savedSettings) {
+			const settings = JSON.parse(savedSettings);
+
+			// Load WLED settings
+			document.getElementById("wled-activate").checked = settings.wled.activate;
+			document.getElementById("wled-count").value = settings.wled.count;
+			document.getElementById("wled-order").value = settings.wled.order;
+
+			// Load Analog settings
+			document.getElementById("analog-activate").checked =
+				settings.analog.activate;
+			document.getElementById("analog-mode").value = settings.analog.mode;
+
+			// Load LED Strip settings
+			document.getElementById("analog-led-r").value = settings.analog.led.r;
+			document.getElementById("analog-led-g").value = settings.analog.led.g;
+			document.getElementById("analog-led-b").value = settings.analog.led.b;
+			document.getElementById("analog-led-ww").value = settings.analog.led.ww;
+			document.getElementById("analog-led-cw").value = settings.analog.led.cw;
+
+			// Load Signal Tower settings
+			document.getElementById("analog-tower-r").value = settings.analog.tower.r;
+			document.getElementById("analog-tower-g").value = settings.analog.tower.g;
+			document.getElementById("analog-tower-b").value = settings.analog.tower.b;
+			document.getElementById("analog-tower-ww").value =
+				settings.analog.tower.ww;
+			document.getElementById("analog-tower-cw").value =
+				settings.analog.tower.cw;
+
+			// Load Switch settings
+			document.getElementById("switch-activate").checked =
+				settings.switch.activate;
+			document.getElementById("switch-function").value =
+				settings.switch.function;
+
+			// Now, ensure the correct sections are hidden or shown based on the settings
+            toggleSection('wled-activate', '.wled-settings');
+            toggleSection('analog-activate', '.analog-settings');
+            toggleSection('switch-activate', '.switch-settings');
+
+            // Show the correct analog mode (LED Strip or Signal Tower)
+            updateAnalogMode(settings.analog.mode);
+
+			console.log("Settings loaded:", settings);
+		}
+	}
+
+	// Function to scroll to the top of the page
+	function scrollToTop() {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	}
 
 	// Show a specific alert for a few seconds
 	const showAlert = (alertId) => {
@@ -19,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		setTimeout(() => {
 			alert.style.display = "none";
 		}, 3000);
-        scrollToTop();
+		scrollToTop();
 	};
 
 	// Form handling for WLED
@@ -36,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			// Show success alert
 			showAlert("alert-saved-wled");
+			saveSettings();
 		});
 
 	// Form handling for Analog LED
@@ -50,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			// Show success alert
 			showAlert("alert-saved-analog");
+			saveSettings();
 		});
 
 	// Form handling for Switch settings
@@ -64,6 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			// Show success alert
 			showAlert("alert-saved-switch");
+			saveSettings();
 		});
 
 	// Handle Analog mode toggle between "LED Strip" and "Signal Tower"
@@ -232,4 +323,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Initially hide all alerts
 	hideAllAlerts();
+	loadSettings();
 });
