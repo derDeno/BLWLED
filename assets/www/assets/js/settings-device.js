@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-	
 	// Hide all alerts initially
 	const hideAllAlerts = () => {
 		document.getElementById("alert-saved-wled").style.display = "none";
@@ -57,8 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			document.getElementById("wled-order").value = settings.wled.order;
 
 			// Load Analog settings
-			document.getElementById("analog-activate").checked =
-				settings.analog.activate;
+			document.getElementById("analog-activate").checked = settings.analog.activate;
 			document.getElementById("analog-mode").value = settings.analog.mode;
 
 			// Load LED Strip settings
@@ -72,26 +70,36 @@ document.addEventListener("DOMContentLoaded", function () {
 			document.getElementById("analog-tower-r").value = settings.analog.tower.r;
 			document.getElementById("analog-tower-g").value = settings.analog.tower.g;
 			document.getElementById("analog-tower-b").value = settings.analog.tower.b;
-			document.getElementById("analog-tower-ww").value =
-				settings.analog.tower.ww;
-			document.getElementById("analog-tower-cw").value =
-				settings.analog.tower.cw;
+			document.getElementById("analog-tower-ww").value = settings.analog.tower.ww;
+			document.getElementById("analog-tower-cw").value = settings.analog.tower.cw;
 
 			// Load Switch settings
-			document.getElementById("switch-activate").checked =
-				settings.switch.activate;
-			document.getElementById("switch-function").value =
-				settings.switch.function;
+			document.getElementById("switch-activate").checked = settings.switch.activate;
+			document.getElementById("switch-function").value = settings.switch.function;
 
 			// Now, ensure the correct sections are hidden or shown based on the settings
-            toggleSection('wled-activate', '.wled-settings');
-            toggleSection('analog-activate', '.analog-settings');
-            toggleSection('switch-activate', '.switch-settings');
+			toggleSection("wled-activate", ".wled-settings");
+			toggleSection("analog-activate", ".analog-settings");
+			toggleSection("switch-activate", ".switch-settings");
 
-            // Show the correct analog mode (LED Strip or Signal Tower)
-            updateAnalogMode(settings.analog.mode);
+			// Show the correct analog mode (LED Strip or Signal Tower)
+			updateAnalogMode(settings.analog.mode);
 
 			console.log("Settings loaded:", settings);
+		}
+	}
+
+	// Function to update the analog mode fieldset visibility
+	function updateAnalogMode(mode) {
+		const ledstripFieldset = document.getElementById("fieldset-ledstrip");
+		const towerFieldset = document.getElementById("fieldset-signaltower");
+
+		if (mode === "strip") {
+			ledstripFieldset.style.display = "block";
+			towerFieldset.style.display = "none";
+		} else {
+			ledstripFieldset.style.display = "none";
+			towerFieldset.style.display = "block";
 		}
 	}
 
@@ -104,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	const showAlert = (alertId) => {
 		const alert = document.getElementById(alertId);
 		alert.style.display = "block";
+
 		setTimeout(() => {
 			alert.style.display = "none";
 		}, 3000);
@@ -111,68 +120,60 @@ document.addEventListener("DOMContentLoaded", function () {
 	};
 
 	// Form handling for WLED
-	document
-		.getElementById("form-wled")
-		.addEventListener("submit", function (event) {
-			event.preventDefault();
-			// Gather form data
-			const activate = document.getElementById("wled-activate").checked;
-			const ledCount = document.getElementById("wled-count").value;
-			const colorOrder = document.getElementById("wled-order").value;
+	document.getElementById("form-wled").addEventListener("submit", function (event) {
+		event.preventDefault();
+		// Gather form data
+		const activate = document.getElementById("wled-activate").checked;
+		const ledCount = document.getElementById("wled-count").value;
+		const colorOrder = document.getElementById("wled-order").value;
 
-			console.log("Saving WLED settings:", { activate, ledCount, colorOrder });
+		console.log("Saving WLED settings:", { activate, ledCount, colorOrder });
 
-			// Show success alert
-			showAlert("alert-saved-wled");
-			saveSettings();
-		});
+		// Show success alert
+		showAlert("alert-saved-wled");
+		saveSettings();
+	});
 
 	// Form handling for Analog LED
-	document
-		.getElementById("form-analog")
-		.addEventListener("submit", function (event) {
-			event.preventDefault();
-			const activate = document.getElementById("analog-activate").checked;
-			const mode = document.getElementById("analog-mode").value;
+	document.getElementById("form-analog").addEventListener("submit", function (event) {
+		event.preventDefault();
+		const activate = document.getElementById("analog-activate").checked;
+		const mode = document.getElementById("analog-mode").value;
 
-			console.log("Saving Analog settings:", { activate, mode });
+		console.log("Saving Analog settings:", { activate, mode });
 
-			// Show success alert
-			showAlert("alert-saved-analog");
-			saveSettings();
-		});
+		// Show success alert
+		showAlert("alert-saved-analog");
+		saveSettings();
+	});
 
 	// Form handling for Switch settings
-	document
-		.getElementById("form-switch")
-		.addEventListener("submit", function (event) {
-			event.preventDefault();
-			const activate = document.getElementById("switch-activate").checked;
-			const switchFunction = document.getElementById("switch-function").value;
+	document.getElementById("form-switch").addEventListener("submit", function (event) {
+		event.preventDefault();
+		const activate = document.getElementById("switch-activate").checked;
+		const switchFunction = document.getElementById("switch-function").value;
 
-			console.log("Saving Switch settings:", { activate, switchFunction });
+		console.log("Saving Switch settings:", { activate, switchFunction });
 
-			// Show success alert
-			showAlert("alert-saved-switch");
-			saveSettings();
-		});
+		// Show success alert
+		showAlert("alert-saved-switch");
+		saveSettings();
+	});
 
 	// Handle Analog mode toggle between "LED Strip" and "Signal Tower"
-	document
-		.getElementById("analog-mode")
-		.addEventListener("change", function () {
-			const mode = this.value;
-			const ledstripFieldset = document.getElementById("fieldset-ledstrip");
-			const towerFieldset = document.getElementById("fieldset-signaltower");
+	document.getElementById("analog-mode").addEventListener("change", function () {
+		const mode = this.value;
+		const ledstripFieldset = document.getElementById("fieldset-ledstrip");
+		const towerFieldset = document.getElementById("fieldset-signaltower");
 
-			if (mode === "strip") {
-				ledstripFieldset.style.display = "block";
-				towerFieldset.style.display = "none";
-			} else {
-				ledstripFieldset.style.display = "none";
-				towerFieldset.style.display = "block";
-			}
-		});
+		if (mode === "strip") {
+			ledstripFieldset.style.display = "block";
+			towerFieldset.style.display = "none";
+		} else {
+			ledstripFieldset.style.display = "none";
+			towerFieldset.style.display = "block";
+		}
+	});
 
 	// Initialize the Analog mode fieldset visibility
 	const initialMode = document.getElementById("analog-mode").value;
@@ -197,16 +198,12 @@ document.addEventListener("DOMContentLoaded", function () {
 	modalResetButton.addEventListener("click", function () {
 		console.log("Device reset confirmed");
 		// Add logic to reset device settings here
-		const modal = bootstrap.Modal.getInstance(
-			document.getElementById("modal-reset")
-		);
+		const modal = bootstrap.Modal.getInstance(document.getElementById("modal-reset"));
 		modal.hide();
 	});
 
 	modalCloseButton.addEventListener("click", function () {
-		const modal = bootstrap.Modal.getInstance(
-			document.getElementById("modal-reset")
-		);
+		const modal = bootstrap.Modal.getInstance(document.getElementById("modal-reset"));
 		modal.hide();
 	});
 
@@ -247,15 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (selectedValue) {
 				allPins.forEach((pin) => {
 					if (pin.value !== selectedValue) {
-						const option = pin.querySelector(
-							`option[value="${selectedValue}"]`
-						);
+						const option = pin.querySelector(`option[value="${selectedValue}"]`);
 						if (option && option.value !== "inactive") {
 							option.disabled = true;
 							// Append the pin name to the label
-							option.textContent = `${
-								option.textContent
-							} - ${pinKey.toUpperCase()} Pin`;
+							option.textContent = `${option.textContent} - ${pinKey.toUpperCase()} Pin`;
 						}
 					}
 				});
