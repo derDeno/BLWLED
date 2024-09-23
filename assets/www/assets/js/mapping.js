@@ -1,38 +1,38 @@
-document.addEventListener("DOMContentLoaded", function() {
-    let mappingCount = 0;  // To keep track of total mappings created
+document.addEventListener("DOMContentLoaded", function () {
+	let mappingCount = 0; // To keep track of total mappings created
 
-    // Function to show the modal for adding a new mapping
-    document.getElementById("btn-add-mapping").addEventListener("click", function() {
-        const modal = new bootstrap.Modal(document.getElementById('modal-add-mapping'));
-        modal.show();
-    });
+	// Function to show the modal for adding a new mapping
+	document.getElementById("btn-add-mapping").addEventListener("click", function () {
+		const modal = new bootstrap.Modal(document.getElementById("modal-add-mapping"));
+		modal.show();
+	});
 
-    // Function to handle saving a new mapping
-    document.getElementById("btn-modal-mapping-save").addEventListener("click", function() {
-        // Get the selected options (labels) from the modal form
-        const outputSelect = document.getElementById("mapping-output");
-        const outputTypeSelect = document.getElementById("mapping-output-type");
-        const eventSelect = document.getElementById("mapping-event");
+	// Function to handle saving a new mapping
+	document.getElementById("btn-modal-mapping-save").addEventListener("click", function () {
+		// Get the selected options (labels) from the modal form
+		const outputSelect = document.getElementById("mapping-output");
+		const outputTypeSelect = document.getElementById("mapping-output-type");
+		const eventSelect = document.getElementById("mapping-event");
 
-        const outputText = outputSelect.options[outputSelect.selectedIndex].text;
-        const outputValue = outputSelect.value;
+		const outputText = outputSelect.options[outputSelect.selectedIndex].text;
+		const outputValue = outputSelect.value;
 
-        const outputTypeText = outputTypeSelect.options[outputTypeSelect.selectedIndex].text;
-        const outputTypeValue = outputTypeSelect.value;
+		const outputTypeText = outputTypeSelect.options[outputTypeSelect.selectedIndex].text;
+		const outputTypeValue = outputTypeSelect.value;
 
-        const eventText = eventSelect.options[eventSelect.selectedIndex].text;
-        const eventValue = eventSelect.value;
+		const eventText = eventSelect.options[eventSelect.selectedIndex].text;
+		const eventValue = eventSelect.value;
 
-        // Create a new card title by combining Output and Event
-        const mappingTitle = `${outputText}: ${eventText}`;
+		// Create a new card title by combining Output and Event
+		const mappingTitle = `${outputText}: ${eventText}`;
 
-        // Create a new mapping card with the generated title and add margin-bottom: 10px
-        mappingCount += 1;  // Increment mapping count
-        const mappingCard = document.createElement("div");
-        mappingCard.classList.add("card");
-        mappingCard.id = `card-mapping-${mappingCount}`;
-        mappingCard.style.marginBottom = '10px';  // Add margin-bottom here
-        mappingCard.innerHTML = `
+		// Create a new mapping card with the generated title and add margin-bottom: 10px
+		mappingCount += 1; // Increment mapping count
+		const mappingCard = document.createElement("div");
+		mappingCard.classList.add("card");
+		mappingCard.id = `card-mapping-${mappingCount}`;
+		mappingCard.style.marginBottom = "10px"; // Add margin-bottom here
+		mappingCard.innerHTML = `
             <div class="card-body">
                 <div class="row text-end">
                     <div class="col text-start">
@@ -57,30 +57,64 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
 
-        // Append the new mapping card to the container
-        document.getElementById("mapping-container").appendChild(mappingCard);
+		// Append the new mapping card to the container
+		document.getElementById("mapping-container").appendChild(mappingCard);
 
-        // Hide the "No mapping added yet" message
-        document.getElementById("no-mapping-yet").style.display = 'none';
+		// Hide the "No mapping added yet" message
+		document.getElementById("no-mapping-yet").style.display = "none";
 
-        // Close the modal after saving
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modal-add-mapping'));
-        modal.hide();
-    });
+		// Close the modal after saving
+		const modal = bootstrap.Modal.getInstance(document.getElementById("modal-add-mapping"));
+		modal.hide();
+	});
 
-    // Handle dynamically removing the correct mapping card
-    document.getElementById("mapping-container").addEventListener("click", function(event) {
-        if (event.target.classList.contains("btn-mapping-delete")) {
-            const cardId = event.target.getAttribute("data-id");
-            const cardToDelete = document.getElementById(`card-mapping-${cardId}`);
-            cardToDelete.remove();
+	// Handle dynamically removing the correct mapping card
+	document.getElementById("mapping-container").addEventListener("click", function (event) {
+		if (event.target.classList.contains("btn-mapping-delete")) {
+			const cardId = event.target.getAttribute("data-id");
+			const cardToDelete = document.getElementById(`card-mapping-${cardId}`);
+			cardToDelete.remove();
 
-            // Decrease mapping count and check if "No mapping added yet" should be displayed
-            mappingCount -= 1;
+			// Decrease mapping count and check if "No mapping added yet" should be displayed
+			mappingCount -= 1;
 
-            if (mappingCount === 0) {
-                document.getElementById("no-mapping-yet").style.display = 'block';
-            }
-        }
-    });
+			if (mappingCount === 0) {
+				document.getElementById("no-mapping-yet").style.display = "block";
+			}
+		}
+	});
+
+	// TESTING
+	const colorPicker = document.getElementById("mapping-action-color-picker");
+	const colorText = document.getElementById("mapping-action-color-text");
+	const brightnessSlider = document.getElementById("mapping-action-color-brightness-slider");
+	const brightnessText = document.getElementById("mapping-action-color-brightness-text");
+
+	// Update the HEX input when the color picker changes
+	colorPicker.addEventListener("input", function () {
+		colorText.value = colorPicker.value.toUpperCase(); // Update HEX value in uppercase
+	});
+
+	// Update the color picker when the HEX text is changed
+	colorText.addEventListener("input", function () {
+		let hex = colorText.value.trim();
+		if (/^#([0-9A-F]{6})$/i.test(hex)) {
+			colorPicker.value = hex; // Update color picker with valid hex
+		}
+	});
+
+	// Update the brightness text when the slider changes
+	brightnessSlider.addEventListener("input", function () {
+		brightnessText.value = brightnessSlider.value + "%";
+	});
+
+	// Update the slider when the brightness text is changed
+	brightnessText.addEventListener("input", function () {
+		let value = brightnessText.value.replace("%", "").trim(); // Remove % for processing
+		value = parseInt(value);
+		if (!isNaN(value) && value >= 0 && value <= 100) {
+			brightnessSlider.value = value;
+			brightnessText.value = value + "%"; // Re-append % symbol
+		}
+	});
 });
