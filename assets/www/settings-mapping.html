@@ -32,33 +32,23 @@
         <div class="row" style="padding-bottom: 10px;">
             <div class="col"><a class="btn btn-secondary align-items-start" role="button" href="settings.html"><i class="fas fa-chevron-left" style="padding-right: 5px;padding-left: 5px;"></i>Settings&nbsp;</a></div>
         </div><!-- End: return to settings -->
-        <!-- Start: ota -->
+        <!-- Start: mapping download -->
         <div class="card" style="margin-bottom: 10px;">
             <div class="card-body">
-                <h4 class="card-title">Firmware Update</h4>
-                <p class="card-text">Upload an OTA update <em>.bin</em> file</p>
-                <form id="form-ota">
-                    <div class="input-group"><input class="form-control" type="file" id="ota-selector" accept=".bin"><button class="btn btn-primary" id="ota-upload" type="button">Update</button></div>
+                <h4 class="card-title">Download Mapping</h4>
+                <p class="card-text">Download your mapping here</p><button class="btn btn-primary" id="btn-mapping-download" type="button">Download Mapping</button>
+            </div>
+        </div><!-- End: mapping download -->
+        <!-- Start: mapping-upload -->
+        <div class="card" style="margin-bottom: 10px;">
+            <div class="card-body">
+                <h4 class="card-title">Upload Mapping</h4>
+                <p class="card-text">Upload a mapping file here.<strong class="text-danger"><strong>&nbsp;THIS WILL OVERWRITE YOUR EXISTING MAPPING!</strong></strong></p>
+                <form id="form-mapping-upload" style="margin-top: 10px;">
+                    <div class="input-group"><input class="form-control" type="file" id="mapping-upload-selector" accept="application/json"><button class="btn btn-primary" id="mapping-upload" type="button">Upload</button></div>
                 </form>
             </div>
-        </div><!-- End: ota -->
-        <!-- Start: backup -->
-        <div class="card" style="margin-bottom: 10px;">
-            <div class="card-body">
-                <h4 class="card-title">Backup</h4>
-                <p class="card-text">Download your settings file</p><button class="btn btn-primary" id="btn-backup-settings" type="button">Download Backup file</button>
-            </div>
-        </div><!-- End: backup -->
-        <!-- Start: restore -->
-        <div class="card" style="margin-bottom: 10px;">
-            <div class="card-body">
-                <h4 class="card-title">Restore</h4>
-                <p class="card-text">Restore your settings by uploading your <em>.blwled</em> file</p>
-                <form id="form-restore-settings" style="margin-top: 10px;">
-                    <div class="input-group"><input class="form-control" type="file" id="restore-selector" accept=".blwled"><button class="btn btn-success" id="restore-upload" type="button">Restore</button></div>
-                </form>
-            </div>
-        </div><!-- End: restore -->
+        </div><!-- End: mapping-upload -->
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
