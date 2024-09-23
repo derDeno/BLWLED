@@ -56,11 +56,24 @@
                 <div class="modal-body">
                     <p>Add a mapping here. First select where to ouput, then select the ouput type and lastly select to what event it should be reacted.</p>
                     <form id="form-mapping">
-                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output</span><select class="form-select" id="mapping-output">
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Event&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><select class="form-select" id="mapping-event">
+                                <option value="idle">Printer Idle</option>
+                                <option value="preheat_bed">Preheating Bed</option>
+                                <option value="cleaning_nozzle">Cleaning Nozzle</option>
+                                <option value="bed_leveling">Bed Leveling</option>
+                                <option value="calibrating_extrusion">Calibrating Extrusion</option>
+                                <option value="printing">Printing</option>
+                                <option value="print-finished">Print Finished</option>
+                                <option value="door_close_open">Door close to open</option>
+                                <option value="door_open_close">Door open to close</option>
+                                <option value="print-failed">Print Failed</option>
+                                <option value=""></option>
+                            </select></div>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output&nbsp; &nbsp; &nbsp; &nbsp;</span><select class="form-select" id="mapping-output">
                                 <option value="switch">Onboard Switch</option>
                                 <option value="wled">WLED</option>
                                 <optgroup label="Analog LED">
-                                    <option value="analog-color">LED Strip Color</option>
+                                    <option value="analog-strip">LED Strip</option>
                                     <option value="analog-r">Analog R</option>
                                     <option value="analog-g">Analog G</option>
                                     <option value="analog-b">Analog B</option>
@@ -86,26 +99,21 @@
                                     <option value="13">GPIO 13</option>
                                 </optgroup>
                             </select></div>
-                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output Type</span><select class="form-select" id="mapping-output-type">
-                                <option value="color" selected="">Led Strip Color</option>
-                                <option value="on">On</option>
-                                <option value="off">Off</option>
-                                <option value="blink">Blink</option>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Action&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><select class="form-select" id="mapping-action">
+                                <option value="color" selected="">Color</option>
+                                <option value="pin-control">Pin Control</option>
                                 <option value="sw-inpout">Switch Input</option>
                             </select></div>
-                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Event</span><select class="form-select" id="mapping-event">
-                                <option value="print-failed">Print Failed</option>
-                                <option value="idle">Printer Idle</option>
-                                <option value="preheat_bed">Preheating Bed</option>
-                                <option value="cleaning_nozzle">Cleaning Nozzle</option>
-                                <option value="bed_leveling">Bed Leveling</option>
-                                <option value="calibrating_extrusion">Calibrating Extrusion</option>
-                                <option value="printing">Printing</option>
-                                <option value="print-finished">Print Finished</option>
-                                <option value="door_close_open">Door close to open</option>
-                                <option value="door_open_close">Door open to close</option>
-                                <option value=""></option>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Pin Control&nbsp;</span><select class="form-select" id="mapping-action-pin-control">
+                                <option value="on" selected="">On</option>
+                                <option value="off">Off</option>
                             </select></div>
+                        <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Color&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><input class="form-control" type="text" id="mapping-action-color-text" style="width: 50%;"><input class="form-control form-control-color" type="color" id="mapping-action-color-picker"></div>
+                        <div class="row" style="margin-left: 0px;margin-right: 0px;margin-bottom: 10px;">
+                            <div class="col-xl-2 col-xxl-2"><label class="col-form-label">Brightness</label></div>
+                            <div class="col-3 col-xl-2 col-xxl-2"><input class="form-control" type="number" id="mapping-action-color-brightness-text" min="0" max="100" step="1"></div>
+                            <div class="col align-self-center"><input class="form-range" type="range" id="mapping-action-color-brightness-slider" min="0" max="100" step="1"></div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer"><button class="btn btn-primary" id="btn-modal-mapping-save" type="button">Save</button></div>
