@@ -103,35 +103,35 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	});
 
-	// Update the brightness text when the slider changes, append % symbol
+	// Update the brightness text when the slider changes
 	brightnessSlider.addEventListener("input", function () {
-		brightnessText.value = brightnessSlider.value + "%";
+		brightnessText.value = brightnessSlider.value;
 	});
 
 	// Update the slider when the brightness text is changed
 	brightnessText.addEventListener("input", function () {
-		let value = brightnessText.value.replace("%", "").trim(); // Remove % for processing
+		let value = brightnessText.value;
 
 		// Ensure the value is numeric and between 0 and 100
 		if (/^\d{1,3}$/.test(value)) {
 			value = parseInt(value);
 			if (value >= 0 && value <= 100) {
 				brightnessSlider.value = value;
-				brightnessText.value = value + "%"; // Re-append % symbol
+				brightnessText.value = value;
 			} else {
-				brightnessText.value = "100%"; // If value is greater than 100, reset to 100%
+				brightnessText.value = 100; // If value is greater than 100, reset to 100%
 				brightnessSlider.value = 100;
 			}
 		} else {
-			// If input is invalid, reset it to the current slider value with %
-			brightnessText.value = brightnessSlider.value + "%";
+			// If input is invalid, reset it to the current slider value
+			brightnessText.value = brightnessSlider.value;
 		}
 	});
 
 	// Prevent non-numeric characters and limit numbers to 0-100
 	brightnessText.addEventListener("keypress", function (e) {
 		const char = String.fromCharCode(e.which);
-		const value = brightnessText.value.replace("%", "").trim(); // Current value without %
+		const value = brightnessText.value;
 
 		// Prevent entering characters other than digits and '%'
 		if (!/[0-9]/.test(char) || parseInt(value + char) > 100) {
