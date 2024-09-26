@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	let currentMappingIndex = mappings.length;
 
-	// Function to update no mapping text visibility
+	// Function to update "no mapping" text visibility
 	function updateNoMappingText() {
 		noMappingText.style.display = mappings.length === 0 ? "block" : "none";
 	}
@@ -110,8 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		addMappingCard(mapping, index);
 	});
 
-	updateNoMappingText();
-
 	// Add mapping button event listener
 	document.getElementById("btn-add-mapping").addEventListener("click", function () {
 		modal.show();
@@ -191,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Toggle secondary settings visibility based on action and output
 	function toggleSecondarySettings() {
-		const action = document.getElementById("mapping-action").value;
+		//const action = document.getElementById("mapping-action").value;
 		const output = document.getElementById("mapping-output").value;
 
 		const colorContainer = document.getElementById("container-action-color");
@@ -201,30 +199,35 @@ document.addEventListener("DOMContentLoaded", function () {
 		colorContainer.style.display = "none";
 		pinControlContainer.style.display = "none";
 
+		const pinControlOption = document.getElementById("mapping-action").querySelector("option[value='pin-control']");
+		const colorOption = document.getElementById("mapping-action").querySelector("option[value='color']");
+
 		// Show relevant container based on action and output
 		if (output === "wled" || output === "analog-strip") {
-			const pinControlOption = document.getElementById("mapping-action").querySelector("option[value='pin-control']");
-			const colorOption = document.getElementById("mapping-action").querySelector("option[value='color']");
-
+			
 			if (pinControlOption) pinControlOption.disabled = true;
 			if (colorOption) colorOption.disabled = false;
 
-			colorContainer.style.display = "block";
 		} else {
-			const pinControlOption = document.getElementById("mapping-action").querySelector("option[value='pin-control']");
-			const colorOption = document.getElementById("mapping-action").querySelector("option[value='color']");
 
 			if (pinControlOption) pinControlOption.disabled = false;
 			if (colorOption) colorOption.disabled = true;
-
-			pinControlContainer.style.display = "block";
 		}
 	}
 
-	document.getElementById("mapping-action").addEventListener("change", toggleSecondarySettings);
-	document.getElementById("mapping-output").addEventListener("change", function () {
-		updateFormBasedOnSettings();
-		toggleSecondarySettings();
+	document.getElementById("mapping-output").addEventListener("change", updateFormBasedOnSettings);
+	document.getElementById("mapping-action").addEventListener("change", function() {
+		const output = document.getElementById("mapping-action").value;
+		const colorContainer = document.getElementById("container-action-color");
+		const pinControlContainer = document.getElementById("container-action-pin-control");
+
+		if(output === "color") {
+			colorContainer.style.display = "block";
+			pinControlContainer.style.display = "none";
+		} else {
+			colorContainer.style.display = "none";
+			pinControlContainer.style.display = "block";
+		}
 	});
 
 	// Blink select visibility toggle
@@ -345,5 +348,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		resetModalForm();
 	});
 
+	updateNoMappingText();
 	updateFormBasedOnSettings();
 });
