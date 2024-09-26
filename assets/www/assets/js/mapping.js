@@ -135,7 +135,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function toggleSecondarySettings() {
         const action = document.getElementById("mapping-action").value;
         const output = document.getElementById("mapping-output").value;
-        const analogMode = deviceSettings.analog?.mode;
 
         const colorContainer = document.getElementById("container-action-color");
         const pinControlContainer = document.getElementById("container-action-pin-control");
@@ -145,21 +144,24 @@ document.addEventListener("DOMContentLoaded", function () {
         pinControlContainer.style.display = "none";
 
         // Show relevant container based on action and output
-        if (output === "wled") {
-            document.getElementById("mapping-action option[value='pin-control']").disabled = true;
-            document.getElementById("mapping-action option[value='color']").disabled = false;
+        if (output === "wled" || output === "analog-strip") {
+            const pinControlOption = document.getElementById("mapping-action").querySelector("option[value='pin-control']");
+            const colorOption = document.getElementById("mapping-action").querySelector("option[value='color']");
+
+            if (pinControlOption) pinControlOption.disabled = true;
+            if (colorOption) colorOption.disabled = false;
+
             document.getElementById("mapping-action").value = "color";
             colorContainer.style.display = "block";
-        } else if (output.startsWith("GPIO") || (output.startsWith("analog") && analogMode === "tower")) {
-            document.getElementById("mapping-action option[value='pin-control']").disabled = false;
-            document.getElementById("mapping-action option[value='color']").disabled = true;
+        } else {
+            const pinControlOption = document.getElementById("mapping-action").querySelector("option[value='pin-control']");
+            const colorOption = document.getElementById("mapping-action").querySelector("option[value='color']");
+
+            if (pinControlOption) pinControlOption.disabled = false;
+            if (colorOption) colorOption.disabled = true;
+
             document.getElementById("mapping-action").value = "pin-control";
             pinControlContainer.style.display = "block";
-        } else if (output.startsWith("analog") && analogMode === "strip") {
-            document.getElementById("mapping-action option[value='color']").disabled = false;
-            document.getElementById("mapping-action option[value='pin-control']").disabled = true;
-            document.getElementById("mapping-action").value = "color";
-            colorContainer.style.display = "block";
         }
     }
 
@@ -191,36 +193,46 @@ document.addEventListener("DOMContentLoaded", function () {
     // Handling dynamic form settings based on localStorage configuration
     function updateFormBasedOnSettings() {
         const wledActive = deviceSettings.wled?.activate;
+        const analogActive = deviceSettings.analog?.activate;
         const analogMode = deviceSettings.analog?.mode;
-        const analogLedSettings = analogMode === "tower" ? deviceSettings.analog?.tower : deviceSettings.analog?.led;
         const switchActive = deviceSettings.switch?.activate && deviceSettings.switch?.function === 'event';
 
         // Disable WLED if it's inactive
-        document.querySelector("#mapping-output option[value='wled']").disabled = !wledActive;
+        const wledOption = document.querySelector("#mapping-output option[value='wled']");
+        if (wledOption) wledOption.disabled = !wledActive;
 
-        // Handle analog settings based on mode and LED/tower settings
-        if (analogMode === "strip") {
-            document.querySelectorAll("#mapping-output optgroup[label='Analog LED'] option").forEach(opt => {
-                opt.disabled = false;
-            });
-        } else if (analogMode === "tower") {
-            document.querySelector("#mapping-output option[value='analog-strip']").disabled = true;
-            document.querySelectorAll("#mapping-output optgroup[label='Analog LED'] option").forEach(opt => {
+        // Handle analog LED activation
+        const analogLedOptions = document.querySelectorAll("#mapping-output optgroup[label='Analog LED'] option");
+        if (!analogActive) {
+            analogLedOptions.forEach(opt => {
                 opt.disabled = true;
             });
-        }
+        } else {
+            // Handle analog settings based on mode
+            if (analogMode === "individually") {
+                const analogStripOption = document.querySelector("#mapping-output option[value='analog-strip']");
+                if (analogStripOption) analogStripOption.disabled = true;
 
-        // Disable analog LEDs/tower pins if any specific pin is inactive
-        if (analogLedSettings) {
-            for (const pin in analogLedSettings) {
-                if (analogLedSettings[pin] === 'inactive') {
-                    document.querySelector(`#mapping-output option[value='analog-${pin}']`).disabled = true;
-                }
+                analogLedOptions.forEach(opt => {
+					if (opt.value !== 'analog-strip') {
+                        opt.disabled = false;
+                    }
+                });
+            } else if (analogMode === "strip") {
+                const analogStripOption = document.querySelector("#mapping-output option[value='analog-strip']");
+                if (analogStripOption) analogStripOption.disabled = false;
+
+                analogLedOptions.forEach(opt => {
+                    if (opt.value !== 'analog-strip') {
+                        opt.disabled = true;
+                    }
+                });
             }
         }
 
         // Disable onboard switch event if switch settings are inactive
-        document.querySelector("#mapping-event option[value='switch']").disabled = !switchActive;
+        const switchOption = document.querySelector("#mapping-event option[value='switch']");
+        if (switchOption) switchOption.disabled = !switchActive;
 
         // Set initial visibility based on default values
         toggleSecondarySettings();
