@@ -22,6 +22,47 @@ document.addEventListener("DOMContentLoaded", function () {
         card.classList.add("card");
         card.style.marginBottom = "10px";
 
+        let additionalSettingsHtml = '';
+
+        if (mapping.action === "color") {
+            // Color-related settings
+            additionalSettingsHtml = `
+                <tr><td>Selected Color</td><td>${mapping.color}</td></tr>
+                <tr><td>Brightness</td><td>${mapping.brightness}</td></tr>
+                <tr><td>Blink</td><td>${mapping.blink ? 'Yes' : 'No'}</td></tr>
+            `;
+
+            if (mapping.blink) {
+                additionalSettingsHtml += `
+                    <tr><td>Blink Duration</td><td>${mapping.blinkDuration}s</td></tr>
+                    <tr><td>Blink On/Off</td><td>On: ${mapping.blinkOn}ms, Off: ${mapping.blinkOff}ms</td></tr>
+                `;
+            }
+
+            additionalSettingsHtml += `
+                <tr><td>Turn Off After</td><td>${mapping.turnOff ? 'Yes' : 'No'}</td></tr>
+            `;
+
+            if (mapping.turnOff) {
+                additionalSettingsHtml += `
+                    <tr><td>Turn Off Time</td><td>${mapping.turnOffTime}s</td></tr>
+                `;
+            }
+
+        } else if (mapping.action === "pin-control") {
+            // Pin-control-related settings
+            additionalSettingsHtml = `
+                <tr><td>Pin Control</td><td>${mapping.pinControl}</td></tr>
+                <tr><td>Invert</td><td>${mapping.invert ? 'Yes' : 'No'}</td></tr>
+            `;
+
+            if (mapping.invert) {
+                additionalSettingsHtml += `
+                    <tr><td>Invert Time</td><td>${mapping.invertTime}s</td></tr>
+                `;
+            }
+        }
+
         card.innerHTML = `
             <div class="card-body">
                 <div class="row text-end">
@@ -31,18 +72,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div id="table-mapping-options-${index}" class="table-responsive">
                     <table class="table table-hover table-sm">
                         <tbody>
-                            <tr>
-                                <td>Event</td>
-                                <td>${mapping.event}</td>
-                            </tr>
-                            <tr>
-                                <td>Output</td>
-                                <td>${mapping.output}</td>
-                            </tr>
-                            <tr>
-                                <td>Action</td>
-                                <td>${mapping.action}</td>
-                            </tr>
+                            <tr><td>Event</td><td>${mapping.event}</td></tr>
+                            <tr><td>Output</td><td>${mapping.output}</td></tr>
+                            <tr><td>Action</td><td>${mapping.action}</td></tr>
+                            ${additionalSettingsHtml}
                         </tbody>
                     </table>
                 </div>
@@ -92,11 +125,36 @@ document.addEventListener("DOMContentLoaded", function () {
         const output = formMapping.querySelector("#mapping-output").value;
         const action = formMapping.querySelector("#mapping-action").value;
 
-        const newMapping = {
+        let newMapping = {
             event,
             output,
             action
         };
+
+        // Collect color-related settings if the action is "color"
+        if (action === "color") {
+            newMapping.color = formMapping.querySelector("#mapping-action-color-picker").value;
+            newMapping.brightness = formMapping.querySelector("#mapping-action-color-brightness-slider").value;
+            newMapping.blink = formMapping.querySelector("#mapping-action-color-blink-select").value === "true";
+            if (newMapping.blink) {
+                newMapping.blinkDuration = formMapping.querySelector("#mapping-action-color-blink-duration").value;
+                newMapping.blinkOn = formMapping.querySelector("#mapping-action-color-blink-on").value;
+                newMapping.blinkOff = formMapping.querySelector("#mapping-action-color-blink-off").value;
+            }
+            newMapping.turnOff = formMapping.querySelector("#mapping-action-color-turn-off").value === "true";
+            if (newMapping.turnOff) {
+                newMapping.turnOffTime = formMapping.querySelector("#mapping-action-color-turn-off-time").value;
+            }
+        }
+
+        // Collect pin-control-related settings if the action is "pin-control"
+        if (action === "pin-control") {
+            newMapping.pinControl = formMapping.querySelector("#mapping-action-pin-control").value;
+            newMapping.invert = formMapping.querySelector("#mapping-action-pin-invert").value === "true";
+            if (newMapping.invert) {
+                newMapping.invertTime = formMapping.querySelector("#mapping-action-pin-invert-time").value;
+            }
+        }
 
         // Add the new mapping to the array and update localStorage
         mappings.push(newMapping);
