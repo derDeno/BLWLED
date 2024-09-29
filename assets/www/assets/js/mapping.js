@@ -22,64 +22,84 @@ document.addEventListener("DOMContentLoaded", function () {
 		card.classList.add("card");
 		card.style.marginBottom = "10px";
 
+		// Get the readable labels from the <select> options
+		const eventLabel = document.querySelector(`#mapping-event option[value='${mapping.event}']`).textContent;
+		const outputLabel = document.querySelector(`#mapping-output option[value='${mapping.output}']`).textContent;
+		const actionLabel = document.querySelector(`#mapping-action option[value='${mapping.action}']`).textContent;
+
 		let additionalSettingsHtml = "";
 
 		if (mapping.action === "color") {
-			// Color-related settings
+			// Color-related settings, with color box aligned vertically and without a border
 			additionalSettingsHtml = `
-                <tr><td>Selected Color</td><td>${mapping.color}</td></tr>
-                <tr><td>Brightness</td><td>${mapping.brightness}</td></tr>
-                <tr><td>Blink</td><td>${mapping.blink ? "Yes" : "No"}</td></tr>
-            `;
+            <tr>
+                <td>Selected Color</td>
+                <td>
+                    <div style="display: flex; align-items: center;">
+                        <div style="display: inline-block; width: 20px; height: 20px; background-color: ${
+													mapping.color
+												}; margin-right: 10px;"></div>
+                        <span>${mapping.color}</span>
+                    </div>
+                </td>
+            </tr>
+            <tr><td>Brightness</td><td>${mapping.brightness}%</td></tr>
+            <tr><td>Blink</td><td>${mapping.blink ? "Yes" : "No"}</td></tr>
+        `;
 
 			if (mapping.blink) {
 				additionalSettingsHtml += `
-                    <tr><td>Blink Duration</td><td>${mapping.blinkDuration}s</td></tr>
-                    <tr><td>Blink On/Off</td><td>On: ${mapping.blinkOn}ms, Off: ${mapping.blinkOff}ms</td></tr>
-                `;
+                <tr><td>Blink Duration</td><td>${mapping.blinkDuration}s</td></tr>
+                <tr><td>Blink On/Off</td><td>On: ${mapping.blinkOn}ms, Off: ${mapping.blinkOff}ms</td></tr>
+            `;
 			}
 
 			additionalSettingsHtml += `
-                <tr><td>Turn Off After</td><td>${mapping.turnOff ? "Yes" : "No"}</td></tr>
-            `;
+            <tr><td>Turn Off After</td><td>${mapping.turnOff ? "Yes" : "No"}</td></tr>
+        `;
 
 			if (mapping.turnOff) {
 				additionalSettingsHtml += `
-                    <tr><td>Turn Off Time</td><td>${mapping.turnOffTime}s</td></tr>
-                `;
+                <tr><td>Turn Off Time</td><td>${mapping.turnOffTime}s</td></tr>
+            `;
 			}
 		} else if (mapping.action === "pin-control") {
 			// Pin-control-related settings
 			additionalSettingsHtml = `
-                <tr><td>Pin Control</td><td>${mapping.pinControl}</td></tr>
-                <tr><td>Invert</td><td>${mapping.invert ? "Yes" : "No"}</td></tr>
-            `;
+            <tr><td>Pin Control</td><td>${mapping.pinControl}</td></tr>
+            <tr><td>Invert</td><td>${mapping.invert ? "Yes" : "No"}</td></tr>
+        `;
 
 			if (mapping.invert) {
 				additionalSettingsHtml += `
-                    <tr><td>Invert Time</td><td>${mapping.invertTime}s</td></tr>
-                `;
+                <tr><td>Invert Time</td><td>${mapping.invertTime}s</td></tr>
+            `;
 			}
 		}
 
+		// Build the card's inner HTML
 		card.innerHTML = `
-            <div class="card-body">
-                <div class="row text-end">
-                    <div class="col text-start align-self-center"><button id="btn-test-event-${index}" class="btn btn-secondary btn-sm" type="button">Test Event</button></div>
-                    <div class="col align-self-center"><button id="btn-mapping-delete-${index}" class="btn-close" type="button"></button></div>
+        <div class="card-body">
+            <div class="row text-end">
+                <div class="col text-start align-self-center">
+                    <button id="btn-test-event-${index}" class="btn btn-secondary btn-sm" type="button">Test Event</button>
                 </div>
-                <div id="table-mapping-options-${index}" class="table-responsive">
-                    <table class="table table-hover table-sm">
-                        <tbody>
-                            <tr><td>Event</td><td>${mapping.event}</td></tr>
-                            <tr><td>Output</td><td>${mapping.output}</td></tr>
-                            <tr><td>Action</td><td>${mapping.action}</td></tr>
-                            ${additionalSettingsHtml}
-                        </tbody>
-                    </table>
+                <div class="col align-self-center">
+                    <button id="btn-mapping-delete-${index}" class="btn-close" type="button"></button>
                 </div>
             </div>
-        `;
+            <div id="table-mapping-options-${index}" class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <tbody>
+                        <tr><td>Event</td><td>${eventLabel}</td></tr>
+                        <tr><td>Output</td><td>${outputLabel}</td></tr>
+                        <tr><td>Action</td><td>${actionLabel}</td></tr>
+                        ${additionalSettingsHtml}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
 		mappingContainer.appendChild(card);
 
 		// Add event listener to delete button
@@ -189,7 +209,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Toggle secondary settings visibility based on action and output
 	function toggleSecondarySettings() {
-		//const action = document.getElementById("mapping-action").value;
 		const output = document.getElementById("mapping-output").value;
 
 		const colorContainer = document.getElementById("container-action-color");
@@ -204,29 +223,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		// Show relevant container based on action and output
 		if (output === "wled" || output === "analog-strip") {
-			
 			if (pinControlOption) pinControlOption.disabled = true;
 			if (colorOption) colorOption.disabled = false;
-
 		} else {
-
 			if (pinControlOption) pinControlOption.disabled = false;
 			if (colorOption) colorOption.disabled = true;
 		}
 	}
 
 	document.getElementById("mapping-output").addEventListener("change", updateFormBasedOnSettings);
-	document.getElementById("mapping-action").addEventListener("change", function() {
-		const output = document.getElementById("mapping-action").value;
+	document.getElementById("mapping-action").addEventListener("change", function () {
+		const action = document.getElementById("mapping-action").value;
 		const colorContainer = document.getElementById("container-action-color");
 		const pinControlContainer = document.getElementById("container-action-pin-control");
 
-		if(output === "color") {
+		if (action === "color") {
 			colorContainer.style.display = "block";
 			pinControlContainer.style.display = "none";
-		} else {
+		} else if (action === "pin-control") {
 			colorContainer.style.display = "none";
 			pinControlContainer.style.display = "block";
+		} else {
+			// Hide both containers if no valid action is selected
+			colorContainer.style.display = "none";
+			pinControlContainer.style.display = "none";
 		}
 	});
 

@@ -7,6 +7,7 @@
     <title>BLWLED</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/Navbar-Right-Links-Dark-icons.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body style="background: rgb(214,214,214);">
@@ -31,9 +32,7 @@
             <div class="col"><button class="btn btn-primary" id="btn-add-mapping" type="button">Add Mapping</button></div>
         </div>
         <h3 class="text-center text-secondary" id="no-mapping-yet">No mapping added yet...</h3>
-        <div id="mapping-container">
-            
-        </div>
+        <div id="mapping-container"></div>
     </div>
     <div class="modal fade" role="dialog" tabindex="-1" id="modal-add-mapping">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-md-down" role="document">
@@ -45,7 +44,7 @@
                     <p>To add a new mapping, first select to what event you want to react. Then select where the action should be outputted and lastly select the action you want to perform. Depending on the combination of your selections, there will be additional settings to be set.</p>
                     <form id="form-mapping">
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Event&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><select class="form-select" id="mapping-event" required="">
-                                <option value="" selected="" disabled>Please select an Event</option>
+                                <option value="" selected="">Please select an Event</option>
                                 <option value="switch">Oboard Switch pressed</option>
                                 <option value="idle">Printer Idle</option>
                                 <optgroup label="Print Events">
@@ -67,7 +66,7 @@
                                 </optgroup>
                             </select></div>
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Output&nbsp; &nbsp; &nbsp; &nbsp;</span><select class="form-select" id="mapping-output" required="">
-                                <option value="" selected="" disabled>Please select an Output</option>
+                                <option value="" selected="">Please select an Output</option>
                                 <option value="wled">WLED</option>
                                 <optgroup label="Analog LED">
                                     <option value="analog-strip">LED Strip</option>
@@ -97,7 +96,7 @@
                                 </optgroup>
                             </select></div>
                         <div class="input-group" style="margin-bottom: 30px;"><span class="input-group-text">Action&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span><select class="form-select" id="mapping-action" required="">
-                                <option value="" selected="" disabled>Please select an Action</option>
+                                <option value="" selected="">Please select an Action</option>
                                 <option value="color">Color</option>
                                 <option value="pin-control">Pin Control</option>
                             </select></div>
