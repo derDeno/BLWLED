@@ -1,0 +1,19 @@
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+table td {
+  padding: 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+
+td:first-child {
+  width: 30%;
+}
+
+td:last-child {
+  width: 70%;
+}
+

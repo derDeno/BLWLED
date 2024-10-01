@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>BLWLED</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Navbar-Right-Links-Dark-icons.css">
+</head>
+
+<body style="background: rgb(214,214,214);">
+    <!-- Start: Navbar Centered Brand (Dark) -->
+    <nav class="navbar navbar-expand-md bg-dark py-3" data-bs-theme="dark">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-bezier">
+                        <path fill-rule="evenodd" d="M0 10.5A1.5 1.5 0 0 1 1.5 9h1A1.5 1.5 0 0 1 4 10.5v1A1.5 1.5 0 0 1 2.5 13h-1A1.5 1.5 0 0 1 0 11.5zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm10.5.5A1.5 1.5 0 0 1 13.5 9h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM6 4.5A1.5 1.5 0 0 1 7.5 3h1A1.5 1.5 0 0 1 10 4.5v1A1.5 1.5 0 0 1 8.5 7h-1A1.5 1.5 0 0 1 6 5.5zM7.5 4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"></path>
+                        <path d="M6 4.5H1.866a1 1 0 1 0 0 1h2.668A6.517 6.517 0 0 0 1.814 9H2.5c.123 0 .244.015.358.043a5.517 5.517 0 0 1 3.185-3.185A1.503 1.503 0 0 1 6 5.5zm3.957 1.358A1.5 1.5 0 0 0 10 5.5v-1h4.134a1 1 0 1 1 0 1h-2.668a6.517 6.517 0 0 1 2.72 3.5H13.5c-.123 0-.243.015-.358.043a5.517 5.517 0 0 0-3.185-3.185z"></path>
+                    </svg></span><span>BLWLED Setup</span></a>
+            <div class="collapse navbar-collapse flex-grow-0 order-md-first" id="navcol-6"></div>
+            <div class="d-none d-md-block"></div>
+        </div>
+    </nav><!-- End: Navbar Centered Brand (Dark) -->
+    <div class="container" style="margin-top: 20px;">
+        <p>Please connect your BLWLED to your network to proceed</p>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Select Network</h4>
+                <div class="row">
+                    <div class="col"><button class="btn btn-primary" id="btn-scan-network" type="button">Scan Networks</button><span class="spinner-border" role="status" id="spinner-network-scan" style="color: rgb(13,110,253);"></span></div>
+                </div>
+                <div class="row" id="network-container" style="margin-top: 20px;">
+                    <div class="col">
+                        <h5>Found Networks</h5><!-- Start: Networks List -->
+                        <ul class="list-group" id="network-group">
+                            <li class="list-group-item" id="network-item-1"><span>WiFi #1</span></li>
+                            <li class="list-group-item" id="network-item-other"><span>Other Network</span></li>
+                        </ul><!-- End: Networks List -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-connect">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Verifying connection</h4>
+                </div>
+                <div class="modal-body">
+                    <p id="msg-check-connection">Checking connection, please wait...</p>
+                    <p id="msg-connection-fail"><strong><span style="color: rgb(255, 0, 0);">Connection failed!</span></strong></p>
+                    <p id="msg-connection-success"><strong><span style="color: rgb(0, 157, 0);">Connection successfuly! Please reboot now</span></strong></p>
+                </div>
+                <div class="modal-footer"><button class="btn btn-secondary" id="btn-cancel" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" id="btn-reboot" type="button" data-bs-dismiss="modal">Reboot</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-network-details">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Connect to WiFi</h4><button class="btn-close" id="btn-modal-details-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-network"><label class="form-label">Network name (SSID)</label><input class="form-control" type="text" id="network-ssid"><label class="form-label" style="margin-top: 15px;">Network password</label><input class="form-control" type="password" id="network-passphrase"></form>
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" id="network-connect" type="submit">Save &amp; Connect</button></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
