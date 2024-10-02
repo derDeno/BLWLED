@@ -1,3 +1,5 @@
 {
-    "prettier.useTabs": true
+    "prettier.useTabs": true,
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+    "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true
 }
