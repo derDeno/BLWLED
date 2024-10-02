@@ -30,7 +30,7 @@ String processorInfo(const String &var) {
         minutes = minutes % 60;
         hours = hours % 24;
 
-        String uptime = String(days) + " days, " + String(hours) + ":" + (minutes < 10 ? "0" : "") + String(minutes) + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+        String uptime = String(days) + " days " + String(hours) + "h " + (minutes < 10 ? "0" : "") + String(minutes) + "min " + (seconds < 10 ? "0" : "") + String(seconds) + "s";
         return uptime;
 
     } else if (var == "TEMPLATE_LOCAL_TIME") {
@@ -68,15 +68,26 @@ void routing(AsyncWebServer &server) {
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setFilter(ON_STA_FILTER);
     server.serveStatic("/", LittleFS, "/captive.html").setFilter(ON_AP_FILTER);
 
-    //server.serveStatic("/info", LittleFS, "/info.html").setTemplateProcessor(processorInfo);
+    // server.serveStatic("/info", LittleFS, "/info.html").setTemplateProcessor(processorInfo);
 
     server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/info.html", String(), false, processorInfo);
     });
 
-    // Serve a route for fetching the text file content
-    server.on("/logs.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/logs.html", String(), false, processorLogs);
+    server.on("/log", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/log.html", String(), false, processorLogs);
+    });
+
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if (LittleFS.exists("/log.txt")) {
+            request->send(LittleFS, "/log.txt", "text/plain", true);
+        } else {
+            request->send(404, "text/plain", "Log file not found!");
+        }
     });
 
     server.onNotFound(notFound);
