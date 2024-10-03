@@ -3,7 +3,6 @@
 #include <LITTLEFS.h>
 #include <WiFi.h>
 
-#include <log.h>
 #include <webserver.h>
 
 const char *ssid = "Unbekannt";

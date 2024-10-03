@@ -129,14 +129,16 @@ void routing(AsyncWebServer &server) {
     });
 
 
-    server.on("/api/reset-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
         logger("Reset by user");
+        request->redirect("/");
         delay(100);
         ESP.restart();
     });
 
     server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
         logger("Reboot by user");
+        request->redirect("/");
         delay(100);
         ESP.restart();
     });
