@@ -82,23 +82,23 @@ void routing(AsyncWebServer &server) {
     });
 
     server.on("/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        request->send(LittleFS, "/settings-device.html", String(), false);
     });
 
     server.on("/settings-mapping", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        request->send(LittleFS, "/settings-mapping.html", String(), false);
     });
 
     server.on("/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        request->send(LittleFS, "/settings-printer.html", String(), false);
     });
 
     server.on("/settings-update", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        request->send(LittleFS, "/settings-update.html", String(), false);
     });
 
     server.on("/settings-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        request->send(LittleFS, "/settings-wifi.html", String(), false);
     });
 
 
@@ -128,6 +128,10 @@ void routing(AsyncWebServer &server) {
 
 
     server.on("/api/reset-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/settings.html", String(), false);
     });
 
