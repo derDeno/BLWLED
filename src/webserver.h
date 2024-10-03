@@ -46,7 +46,7 @@ String processorLogs(const String &var) {
         String logContent = "";
         if (logFile) {
             while (logFile.available()) {
-                logContent += logFile.readStringUntil('\n');
+                logContent += logFile.readStringUntil('\n') + "<br>";
             }
             logFile.close();
         } else {
