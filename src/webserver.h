@@ -2,6 +2,8 @@
 #include <LITTLEFS.h>
 #include <WiFi.h>
 
+#include <log.h>
+
 String processorInfo(const String &var) {
     if (var == "TEMPLATE_MAC") {
         return WiFi.macAddress();
@@ -128,11 +130,15 @@ void routing(AsyncWebServer &server) {
 
 
     server.on("/api/reset-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        logger("Reset by user");
+        delay(100);
+        ESP.restart();
     });
 
     server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        logger("Reboot by user");
+        delay(100);
+        ESP.restart();
     });
 
     server.on("/api/mapping-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
