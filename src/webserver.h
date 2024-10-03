@@ -68,8 +68,7 @@ void routing(AsyncWebServer &server) {
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setFilter(ON_STA_FILTER);
     server.serveStatic("/", LittleFS, "/captive.html").setFilter(ON_AP_FILTER);
 
-    // server.serveStatic("/info", LittleFS, "/info.html").setTemplateProcessor(processorInfo);
-
+    // Main routes
     server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/info.html", String(), false, processorInfo);
     });
@@ -82,12 +81,94 @@ void routing(AsyncWebServer &server) {
         request->send(LittleFS, "/settings.html", String(), false);
     });
 
+    server.on("/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/settings-mapping", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/settings-update", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/settings-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+
+    // API routes
     server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
         if (LittleFS.exists("/log.txt")) {
             request->send(LittleFS, "/log.txt", "text/plain", true);
         } else {
             request->send(404, "text/plain", "Log file not found!");
         }
+    });
+
+    // get all mappings
+    server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    // add mapping
+    server.on("/api/mappings", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    // delete mapping
+    server.on("/api/mappings", HTTP_DELETE, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+
+    server.on("/api/reset-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/mapping-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/mapping-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/test-mapping", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
+    });
+
+    server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/settings.html", String(), false);
     });
 
     server.onNotFound(notFound);
