@@ -44,7 +44,7 @@ void setup() {
       }
 
       logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
-      logger(String("BLWLED HostName: ") + String(WiFi.getHostname()));
+      logger(String("BLWLED Hostname: ") + String(WiFi.getHostname()));
       logger("RSSI: " + String(WiFi.RSSI()));
     }
 
