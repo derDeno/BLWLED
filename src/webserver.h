@@ -113,22 +113,6 @@ void routing(AsyncWebServer &server) {
         }
     });
 
-    // get all mappings
-    server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
-    });
-
-    // add mapping
-    server.on("/api/mappings", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
-    });
-
-    // delete mapping
-    server.on("/api/mappings", HTTP_DELETE, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
-    });
-
-
     server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
         logger("Reset by user");
         request->redirect("/");
@@ -143,45 +127,78 @@ void routing(AsyncWebServer &server) {
         ESP.restart();
     });
 
+    // AP SETTINGS
+    server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // receive wifi data and connect
+    });
+
+    // MAPPINGS
+    server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
+        
+    });
+    
+    server.on("/api/mappings", HTTP_POST, [](AsyncWebServerRequest *request) {
+        
+    });
+
+    server.on("/api/mappings", HTTP_DELETE, [](AsyncWebServerRequest *request) {
+        if(request->hasParam("id")) {
+            int id = request->getParam("id")->value().toInt();
+        }
+    });
+
     server.on("/api/mapping-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        
     });
 
     server.on("/api/mapping-download", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        
     });
 
+    server.on("/api/test-mapping", HTTP_GET, [](AsyncWebServerRequest *request) {
+        if(request->hasParam("id")) {
+            int id = request->getParam("id")->value().toInt();
+        }
+    });
+
+    
+    // SETTINGS DEVICE
     server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // respond device settings json
     });
 
     server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // receive settings device
     });
 
+
+    // SETTINGS PRINTER
     server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // respond printer settings as json
     });
 
     server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
-    });
-
-    server.on("/api/test-mapping", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // receive printer settings
     });
 
     server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // check printer mqtt for info msg
     });
 
+
+    // BACKUP & OTA
     server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // generate settings download file
     });
 
     server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/settings.html", String(), false);
+        // receive settings file and reboot
     });
+
+    server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // receive ota file and process
+    });
+
 
     server.onNotFound(notFound);
 }
