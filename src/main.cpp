@@ -3,13 +3,15 @@
 #include <ESPAsyncWebServer.h>
 #include <DNSServer.h>
 #include <WiFi.h>
+#include <Preferences.h>
 
 #include <webserver.h>
 
-const char *ssid = "Unbekannt";
-const char *password = "ffYkexQAETVIb";
-const bool wifiSet = true;
+String ssid = "Unbekannt";
+String password = "ffYkexQAETVIb";
+bool wifiSet;
 
+Preferences pref;
 DNSServer dnsServer;
 AsyncWebServer server(80);
 
@@ -23,6 +25,12 @@ void setup() {
     }
     logger("=============================");
     Serial.println("LittleFS mounted successfully");
+
+    pref.begin("wifi", false);
+    wifiSet = pref.getBool("setup");
+    ssid = pref.getString("ssid", "");
+    password = pref.getString("password", "");
+    pref.end();
 
     // check if wifi was set or if in ap mode
     if (!wifiSet) {

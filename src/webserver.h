@@ -1,8 +1,11 @@
 #include <ESPAsyncWebserver.h>
 #include <LITTLEFS.h>
 #include <WiFi.h>
+#include <Preferences.h>
 
 #include <log.h>
+
+Preferences pref;
 
 String processorInfo(const String &var) {
     if (var == "TEMPLATE_MAC") {
@@ -115,6 +118,20 @@ void routing(AsyncWebServer &server) {
 
     server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
         logger("Reset by user");
+
+        // clear all settings
+        pref.begin("wifi", false);
+        pref.clear();
+
+        pref.begin("printer", false);
+        pref.clear();
+
+        pref.begin("device", false);
+        pref.clear();
+
+        pref.begin("mapping", false);
+        pref.clear();
+
         request->redirect("/");
         delay(100);
         ESP.restart();
@@ -130,8 +147,13 @@ void routing(AsyncWebServer &server) {
     // AP SETTINGS
     server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
         // receive wifi data and connect
-    });
+        pref.begin("wifi", false);
+        pref.putString("ssid", "");
 
+        pref.putString("password", "");
+        pref.end();
+    });
+    
     // MAPPINGS
     server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
         
