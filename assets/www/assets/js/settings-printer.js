@@ -1,75 +1,59 @@
-// Function to load saved printer settings from localStorage and populate the form
-function loadPrinterSettings() {
-    // Get saved settings (as JSON string) from localStorage
-    const savedSettings = localStorage.getItem('printerSettings');
-
-    // If settings exist, parse the JSON and populate the form fields
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        document.getElementById('settings-printer-ip').value = settings.printerIP || '';
-        document.getElementById('settings-printer-access-code').value = settings.accessCode || '';
+// Function to load saved printer settings from the API and populate the form
+async function loadPrinterSettings() {
+    try {
+        const response = await fetch('/api/settings-printer');
+        if (response.ok) {
+            const settings = await response.json();
+            document.getElementById('settings-printer-ip').value = settings.printerIp || '';
+            document.getElementById('settings-printer-access-code').value = settings.accessCode || '';
+            document.getElementById('settings-printer-return-idle-door').value = settings.rtid ? 'true' : 'false';
+            document.getElementById('settings-printer-return-idle-time').value = settings.rtit || '';
+        } else {
+            console.error('Failed to load printer settings');
+        }
+    } catch (error) {
+        console.error('Error fetching printer settings:', error);
     }
 }
 
-// Function to save printer settings as a JSON string
-function savePrinterSettings() {
+// Function to save printer settings using the API
+async function savePrinterSettings() {
     // Get the input values from the form
     const printerIP = document.getElementById('settings-printer-ip').value;
     const accessCode = document.getElementById('settings-printer-access-code').value;
-
-    // Create an object with the settings
-    const settings = {
-        printerIP: printerIP,
-        accessCode: accessCode
-    };
-
-    // Save the settings object as a JSON string in localStorage
-    localStorage.setItem('printerSettings', JSON.stringify(settings));
-
-    // Show the success alert message for saving connection settings
-    const alertBox = document.getElementById('alert-saved-printer-connection');
-    alertBox.style.display = 'block';  // Show the alert
-
-    // Hide the alert after 3 seconds
-    setTimeout(() => {
-        alertBox.style.display = 'none';
-    }, 3000);
-}
-
-// Function to save event settings as a JSON string
-function saveEventSettings() {
-    // Get the input values from the form
     const returnToIdleDoor = document.getElementById('settings-printer-return-idle-door').value;
     const returnIdleTime = document.getElementById('settings-printer-return-idle-time').value;
 
-    // Create an object with the event settings
-    const eventSettings = {
-        returnToIdleDoor: returnToIdleDoor,
-        returnIdleTime: returnIdleTime
-    };
+    // Create form data to send to the API
+    const formData = new URLSearchParams();
+    formData.append('printerIp', printerIP);
+    formData.append('accessCode', accessCode);
+    formData.append('rtid', returnToIdleDoor === 'true');
+    formData.append('rtit', returnIdleTime);
 
-    // Save the event settings object as a JSON string in localStorage
-    localStorage.setItem('printerEventSettings', JSON.stringify(eventSettings));
+    try {
+        const response = await fetch('/api/settings-printer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString(),
+        });
 
-    // Show the success alert message for saving event settings
-    const alertBox = document.getElementById('alert-saved-printer-events');
-    alertBox.style.display = 'block';  // Show the alert
+        if (response.ok) {
+            // Show the success alert message for saving connection settings
+            const alertBox = document.getElementById('alert-saved-printer-connection');
+            alertBox.style.display = 'block';  // Show the alert
 
-    // Hide the alert after 3 seconds
-    setTimeout(() => {
-        alertBox.style.display = 'none';
-    }, 3000);
-}
-
-// Function to load saved event settings from localStorage and populate the form
-function loadEventSettings() {
-    const savedEventSettings = localStorage.getItem('printerEventSettings');
-
-    // If event settings exist, parse and populate the form fields
-    if (savedEventSettings) {
-        const eventSettings = JSON.parse(savedEventSettings);
-        document.getElementById('settings-printer-return-idle-door').value = eventSettings.returnToIdleDoor || 'true';
-        document.getElementById('settings-printer-return-idle-time').value = eventSettings.returnIdleTime || '';
+            // Hide the alert after 3 seconds
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+        } else {
+            console.error('Failed to save printer settings');
+        }
+    } catch (error) {
+        console.error('Error saving printer settings:', error);
     }
 }
 
@@ -92,12 +76,6 @@ document.getElementById('settings-printer-connection-save').addEventListener('cl
     savePrinterSettings();    // Save the printer connection settings
 });
 
-// Event listener for the Save button (Printer Event Settings)
-document.getElementById('settings-printer-events-save').addEventListener('click', function (event) {
-    event.preventDefault();  // Prevent form submission
-    saveEventSettings();    // Save the printer event settings
-});
-
 // Event listener for "Test Connection" button to show the modal
 document.getElementById('btn-connection-test').addEventListener('click', function () {
     showTestConnectionModal();  // Show the modal when the button is clicked
@@ -106,9 +84,7 @@ document.getElementById('btn-connection-test').addEventListener('click', functio
 // Load the printer settings when the page is loaded
 window.onload = function () {
     loadPrinterSettings();  // Load connection settings
-    loadEventSettings();    // Load event settings
 
     // Initially hide the success alert messages
     document.getElementById('alert-saved-printer-connection').style.display = 'none';
-    document.getElementById('alert-saved-printer-events').style.display = 'none';
 };
