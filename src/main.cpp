@@ -72,9 +72,10 @@ void loop() {
   if (swState == HIGH) {
     pref.begin("deviceSettings", true);
     bool swActive = pref.getBool("sw");
+    String action = pref.getString("function");
+    pref.end();
 
     if(swActive) {
-      String action = pref.getString("function");
       if(action == "event") {
         // TODO: check for mapping
       }else {

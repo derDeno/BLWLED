@@ -1,6 +1,7 @@
 #include <ESPAsyncWebserver.h>
 #include <Preferences.h>
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include "ArduinoJson.h"
 #include "AsyncJson.h"
 
@@ -122,15 +123,19 @@ void routing(AsyncWebServer &server) {
     // clear all settings
     pref.begin("wifi", false);
     pref.clear();
+    pref.end();
 
     pref.begin("printerSettings", false);
     pref.clear();
+    pref.end();
 
     pref.begin("deviceSettings", false);
     pref.clear();
+    pref.end();
 
     pref.begin("mapping", false);
     pref.clear();
+    pref.end();
 
     request->redirect("/");
     delay(100);
@@ -144,14 +149,65 @@ void routing(AsyncWebServer &server) {
     ESP.restart();
   });
 
-  // AP SETTINGS
+  // WiFi SETTINGS
   server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
-    // receive wifi data and connect
-    pref.begin("wifi", false);
-    pref.putString("ssid", "");
+    String ssidNew;
+    String pwNew;
 
-    pref.putString("password", "");
-    pref.end();
+    if (request->hasParam("ssid", true)) {
+      ssidNew = request->getParam("ssid", true)->value();
+    }
+
+    if (request->hasParam("pw", true)) {
+      pwNew = request->getParam("pw", true)->value();
+    }
+
+    WiFiMulti wifiMulti;
+    wifiMulti.addAP(ssidNew.c_str(), pwNew.c_str());
+    unsigned long startTime = millis();
+    unsigned long timeout = 10000;
+
+    // test new connection
+    logger("Testing new WiFi connection");
+    while (wifiMulti.run() != WL_CONNECTED && millis() - startTime < timeout) {
+      delay(500);
+      Serial.print(".");
+    }
+
+    if (wifiMulti.run() == WL_CONNECTED) {
+      logger("\nSuccessfully connected to the new WiFi network!");
+      logger("New IP Address: " + WiFi.localIP().toString());
+
+      pref.begin("wifi");
+      pref.putString("ssid", ssidNew);
+      pref.putString("pw", pwNew);
+      pref.end();
+
+      request->send(200, "application/json", "{\"status\":\"success\"}");
+      delay(2000);
+      ESP.restart();
+
+    } else {
+      logger("\nFailed to connect to the new WiFi network. Keeping current connection.");
+      request->send(200, "application/json", "{\"status\":\"failed\"}");
+    }
+  });
+
+  server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {
+    int networkCount = WiFi.scanNetworks();
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    JsonArray networks = doc.createNestedArray("networks");
+
+    for (int i = 0; i < networkCount; ++i) {
+      JsonObject network = networks.createNestedObject();
+      network["ssid"] = WiFi.SSID(i);
+      network["rssi"] = String(WiFi.RSSI(i));
+    }
+
+    serializeJson(doc, *response);
+    request->send(response);
   });
 
   // MAPPINGS
