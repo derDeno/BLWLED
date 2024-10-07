@@ -356,6 +356,14 @@ void routing(AsyncWebServer &server) {
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
     // check printer mqtt for info msg
+
+    pref.begin("printerSettings");
+    String printerIp = pref.getString("ip", "");
+    String accessCode = pref.getString("ac", "");
+    pref.end();
+
+
+    request->send(200, "application/json", "{\"status\":\"success\"}");
   });
 
   // BACKUP & OTA
@@ -379,7 +387,37 @@ void routing(AsyncWebServer &server) {
     String accessCode = pref.getString("ac", "");
     pref.end();
 
+    // wifi settings
+    pref.begin("wifi");
+    bool setup = pref.getBool("setup", false);
+    String ssid = pref.getString("ssid", "");
+    String pw = pref.getString("pw", "");
+    pref.end();
+
     // TODO: generate json file for download
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    JsonObject device = doc.createNestedObject("device");
+    device["wled"] = wled;
+    device["count"] = count;
+    device["order"] = order;
+    device["analog"] = analog;
+    device["mode"] = mode;
+    device["switch"] = sw;
+    device["function"] = fnct;
+
+    JsonObject printer = doc.createNestedObject("printer");
+    printer["ip"] = printerIp;
+    printer["ac"] = accessCode;
+
+    JsonObject wifi = doc.createNestedObject("wifi");
+    wifi["setup"] = setup;
+    wifi["ssid"] = ssid;
+    wifi["pw"] = pw;
+
+    serializeJson(doc, *response);
+    response->addHeader("Content-Disposition", "attachment; filename=\"backup.blwled\"");
+    request->send(response);
   });
 
   server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) {

@@ -41,9 +41,9 @@ void setup() {
 
   /* for dev, deactivate
   pref.begin("wifi", false);
-  wifiSet = pref.getBool("setup");
+  wifiSet = pref.getBool("setup", false);
   ssid = pref.getString("ssid", "");
-  password = pref.getString("password", "");
+  password = pref.getString("pw", "");
   pref.end();
   */
 
