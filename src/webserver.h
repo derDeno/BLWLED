@@ -123,10 +123,10 @@ void routing(AsyncWebServer &server) {
     pref.begin("wifi", false);
     pref.clear();
 
-    pref.begin("printer", false);
+    pref.begin("printerSettings", false);
     pref.clear();
 
-    pref.begin("device", false);
+    pref.begin("deviceSettings", false);
     pref.clear();
 
     pref.begin("mapping", false);
@@ -185,11 +185,70 @@ void routing(AsyncWebServer &server) {
 
   // SETTINGS DEVICE
   server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // respond device settings json
+    pref.begin("deviceSettings");
+    bool wled = pref.getBool("wled", false);
+    int count = pref.getInt("count", 0);
+    String order = pref.getString("order", "gbr");
+
+    bool analog = pref.getBool("analog", false);
+    String mode = pref.getString("mode", "strip");
+
+    bool sw = pref.getBool("sw", false);
+    String fnct = pref.getString("function", "event");
+    pref.end();
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    doc["wled"] = wled;
+    doc["count"] = count;
+    doc["order"] = order;
+    doc["analog"] = analog;
+    doc["mode"] = mode;
+    doc["switch"] = sw;
+    doc["function"] = fnct;
+    serializeJson(doc, *response);
+    request->send(response);
   });
 
   server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
-    // receive settings device
+    pref.begin("deviceSettings");
+    if (request->hasParam("wled", true)) {
+      bool wled = request->getParam("wled", true)->value();
+      pref.putBool("wled", wled);
+    }
+
+    if (request->hasParam("count", true)) {
+      int count = request->getParam("count", true)->value().toInt();
+      pref.putInt("count", count);
+    }
+
+    if (request->hasParam("order", true)) {
+      bool returnToIdleDoor = request->getParam("order", true)->value();
+      pref.putBool("order", returnToIdleDoor);
+    }
+
+    if (request->hasParam("analog", true)) {
+      bool analog = request->getParam("analog", true)->value();
+      pref.putBool("analog", analog);
+    }
+
+    if (request->hasParam("mode", true)) {
+      String mode = request->getParam("mode", true)->value();
+      pref.putString("mode", mode);
+    }
+
+    if (request->hasParam("switch", true)) {
+      bool sw = request->getParam("switch", true)->value();
+      pref.putBool("sw", sw);
+    }
+
+    if (request->hasParam("function", true)) {
+      String fnct = request->getParam("function", true)->value();
+      pref.putString("function", fnct);
+    }
+
+    pref.end();
+    request->send(200, "application/json", "{\"status\":\"saved\"}");
   });
 
   // SETTINGS PRINTER
@@ -202,11 +261,13 @@ void routing(AsyncWebServer &server) {
     pref.end();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &root = jsonBuffer.createObject();
-    root["heap"] = ESP.getFreeHeap();
-    root["ssid"] = WiFi.SSID();
-    root.printTo(*response);
+    JsonDocument doc;
+    doc["printerIp"] = printerIp;
+    doc["accessCode"] = accessCode;
+    doc["rtid"] = returnToIdleDoor;
+    doc["rtit"] = returnToIdleTime;
+    doc["test"] = ESP.getFreeHeap();
+    serializeJson(doc, *response);
     request->send(response);
   });
 
@@ -225,12 +286,12 @@ void routing(AsyncWebServer &server) {
 
     if (request->hasParam("rtid", true)) {
       bool returnToIdleDoor = request->getParam("rtid", true)->value();
-      pref.putBool("ac", returnToIdleDoor);
+      pref.putBool("rtid", returnToIdleDoor);
     }
 
     if (request->hasParam("rtit", true)) {
       int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
-      pref.putInt("ac", returnToIdleTime);
+      pref.putInt("rtit", returnToIdleTime);
     }
 
     pref.end();

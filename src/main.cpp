@@ -60,8 +60,28 @@ void setup() {
   routing(server);
   server.begin();
   logger("HTTP server started");
+
+  // Onboard Switch def
+  pinMode(5, INPUT);
 }
 
 void loop() {
-  dnsServer.processNextRequest();
+
+  // react to switch press
+  int swState = digitalRead(5);
+  if (swState == HIGH) {
+    pref.begin("deviceSettings", true);
+    bool swActive = pref.getBool("sw");
+
+    if(swActive) {
+      String action = pref.getString("function");
+      if(action == "event") {
+        // TODO: check for mapping
+      }else {
+        ESP.restart();
+      }
+    }
+  }
+
+
 }
