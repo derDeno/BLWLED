@@ -65,9 +65,9 @@ void setup() {
 void loop() {
 
   // react to switch press
-  /*
   int swState = digitalRead(5);
-  if (swState == HIGH) {
+  if (swState == LOW) {
+    logger("Onboard switch pressed");
     pref.begin("deviceSettings", true);
     bool swActive = pref.getBool("sw");
     String action = pref.getString("function", "");
@@ -76,11 +76,13 @@ void loop() {
     if(swActive) {
       if(action == "event") {
         // TODO: check for mapping
-      }else {
+      }else if(action == "reboot") {
         ESP.restart();
+      }else {
+        // do nothing
       }
     }
+    delay(1000); // debounce
   }
-  */
 
 }
