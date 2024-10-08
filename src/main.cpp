@@ -1,11 +1,9 @@
-#include <DNSServer.h>
 #include <webserver.h>
 
 String ssid = "Unbekannt";
 String password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
-DNSServer dnsServer;
 AsyncWebServer server(80);
 
 void initWifi() {
@@ -49,7 +47,6 @@ void setup() {
 
   if (!wifiSet) {
     WiFi.softAP("BLWLED");
-    dnsServer.start(53, "*", WiFi.softAPIP());
     logger("WiFi not setup yet, starting AP");
 
   } else {
@@ -68,11 +65,12 @@ void setup() {
 void loop() {
 
   // react to switch press
+  /*
   int swState = digitalRead(5);
   if (swState == HIGH) {
     pref.begin("deviceSettings", true);
     bool swActive = pref.getBool("sw");
-    String action = pref.getString("function");
+    String action = pref.getString("function", "");
     pref.end();
 
     if(swActive) {
@@ -83,6 +81,6 @@ void loop() {
       }
     }
   }
-
+  */
 
 }

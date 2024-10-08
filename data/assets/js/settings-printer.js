@@ -25,8 +25,8 @@ async function savePrinterSettings() {
 
     // Create form data to send to the API
     const formData = new URLSearchParams();
-    formData.append('printerIp', printerIP);
-    formData.append('accessCode', accessCode);
+    formData.append('ip', printerIP);
+    formData.append('ac', accessCode);
     formData.append('rtid', returnToIdleDoor === 'true');
     formData.append('rtit', returnIdleTime);
 
@@ -40,7 +40,6 @@ async function savePrinterSettings() {
         });
 
         if (response.ok) {
-            // Show the success alert message for saving connection settings
             const alertBox = document.getElementById('alert-saved-printer-connection');
             alertBox.style.display = 'block';
 
@@ -55,30 +54,25 @@ async function savePrinterSettings() {
     }
 }
 
-// Function to handle the modal visibility for testing printer connection
 function showTestConnectionModal() {
     const testConnectionModal = new bootstrap.Modal(document.getElementById('modal-test-connection'));
     testConnectionModal.show();
 }
 
-// Event listener to close the modal when "Close" button is clicked
 document.getElementById('btn-modal-test-connection-close').addEventListener('click', function () {
     const testConnectionModal = bootstrap.Modal.getInstance(document.getElementById('modal-test-connection'));
     testConnectionModal.hide();
 });
 
-// Event listener for the Save button (Printer Connection)
 document.getElementById('settings-printer-connection-save').addEventListener('click', function (event) {
     event.preventDefault();
     savePrinterSettings();
 });
 
-// Event listener for "Test Connection" button to show the modal
 document.getElementById('btn-connection-test').addEventListener('click', function () {
     showTestConnectionModal();
 });
 
-// Load the printer settings when the page is loaded
 window.onload = function () {
     loadPrinterSettings();
     document.getElementById('alert-saved-printer-connection').style.display = 'none';

@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include "ArduinoJson.h"
-#include "AsyncJson.h"
+#include "nvs_flash.h"
 
 #include <log.h>
 
@@ -120,22 +120,8 @@ void routing(AsyncWebServer &server) {
   server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
     logger("Reset by user");
 
-    // clear all settings
-    pref.begin("wifi", false);
-    pref.clear();
-    pref.end();
-
-    pref.begin("printerSettings", false);
-    pref.clear();
-    pref.end();
-
-    pref.begin("deviceSettings", false);
-    pref.clear();
-    pref.end();
-
-    pref.begin("mapping", false);
-    pref.clear();
-    pref.end();
+    nvs_flash_erase();
+    nvs_flash_init();
 
     request->redirect("/");
     delay(100);
@@ -194,16 +180,26 @@ void routing(AsyncWebServer &server) {
   });
 
   server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {
-    int networkCount = WiFi.scanNetworks();
+
+    int networkCount = WiFi.scanComplete();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    JsonArray networks = doc.createNestedArray("networks");
 
-    for (int i = 0; i < networkCount; ++i) {
-      JsonObject network = networks.createNestedObject();
-      network["ssid"] = WiFi.SSID(i);
-      network["rssi"] = String(WiFi.RSSI(i));
+    if (networkCount == -2) {
+        WiFi.scanNetworks(true);
+        doc["status"] = "scan_in_progress";
+    } else if (networkCount >= 0) {
+        JsonArray networks = doc["networks"].to<JsonArray>();
+
+        for (int i = 0; i < networkCount; ++i) {
+            JsonObject network = networks.add<JsonObject>();
+            network["ssid"] = WiFi.SSID(i);
+            network["rssi"] = WiFi.RSSI(i);
+        }
+        WiFi.scanDelete();
+    } else {
+        doc["status"] = "no_networks";
     }
 
     serializeJson(doc, *response);
@@ -362,7 +358,6 @@ void routing(AsyncWebServer &server) {
     String accessCode = pref.getString("ac", "");
     pref.end();
 
-
     request->send(200, "application/json", "{\"status\":\"success\"}");
   });
 
@@ -397,7 +392,7 @@ void routing(AsyncWebServer &server) {
     // TODO: generate json file for download
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    JsonObject device = doc.createNestedObject("device");
+    JsonObject device = doc["device"].to<JsonObject>();
     device["wled"] = wled;
     device["count"] = count;
     device["order"] = order;
@@ -406,11 +401,11 @@ void routing(AsyncWebServer &server) {
     device["switch"] = sw;
     device["function"] = fnct;
 
-    JsonObject printer = doc.createNestedObject("printer");
+    JsonObject printer = doc["printer"].to<JsonObject>();
     printer["ip"] = printerIp;
     printer["ac"] = accessCode;
-
-    JsonObject wifi = doc.createNestedObject("wifi");
+  
+    JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;
     wifi["ssid"] = ssid;
     wifi["pw"] = pw;
