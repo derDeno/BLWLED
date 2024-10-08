@@ -8,6 +8,7 @@ AsyncWebServer server(80);
 
 void initWifi() {
   // Connect to Wi-Fi network
+  WiFi.setTxPower(WIFI_POWER_19_5dBm);
   WiFi.setHostname("BLWLED");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
