@@ -308,6 +308,7 @@ void routing(AsyncWebServer &server) {
     pref.begin("printerSettings");
     String printerIp = pref.getString("ip", "");
     String accessCode = pref.getString("ac", "");
+    String sn = pref.getString("sn", "");
     bool returnToIdleDoor = pref.getBool("rtid", true);
     int returnToIdleTime = pref.getInt("rtit", 10);
     pref.end();
@@ -316,9 +317,11 @@ void routing(AsyncWebServer &server) {
     JsonDocument doc;
     doc["printerIp"] = printerIp;
     doc["accessCode"] = accessCode;
+    doc["sn"] = sn;
     doc["rtid"] = returnToIdleDoor;
     doc["rtit"] = returnToIdleTime;
     doc["test"] = ESP.getFreeHeap();
+
     serializeJson(doc, *response);
     request->send(response);
   });
@@ -334,6 +337,11 @@ void routing(AsyncWebServer &server) {
     if (request->hasParam("ac", true)) {
       String accessCode = request->getParam("ac", true)->value();
       pref.putString("ac", accessCode);
+    }
+
+    if (request->hasParam("sn", true)) {
+      String sn = request->getParam("sn", true)->value();
+      pref.putString("sn", sn);
     }
 
     if (request->hasParam("rtid", true)) {
@@ -356,6 +364,7 @@ void routing(AsyncWebServer &server) {
     pref.begin("printerSettings");
     String printerIp = pref.getString("ip", "");
     String accessCode = pref.getString("ac", "");
+    String sn = pref.getString("sn", "");
     pref.end();
 
     request->send(200, "application/json", "{\"status\":\"success\"}");

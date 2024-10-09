@@ -6,6 +6,7 @@ async function loadPrinterSettings() {
             const settings = await response.json();
             document.getElementById('settings-printer-ip').value = settings.printerIp || '';
             document.getElementById('settings-printer-access-code').value = settings.accessCode || '';
+            document.getElementById('settings-printer-access-code').value = settings.sn || '';
             document.getElementById('settings-printer-return-idle-door').value = settings.rtid ? 'true' : 'false';
             document.getElementById('settings-printer-return-idle-time').value = settings.rtit || '';
         } else {
@@ -20,6 +21,7 @@ async function loadPrinterSettings() {
 async function savePrinterSettings() {
     const printerIP = document.getElementById('settings-printer-ip').value;
     const accessCode = document.getElementById('settings-printer-access-code').value;
+    const sn = document.getElementById('settings-printer-sn').value;
     const returnToIdleDoor = document.getElementById('settings-printer-return-idle-door').value;
     const returnIdleTime = document.getElementById('settings-printer-return-idle-time').value;
 
@@ -27,6 +29,7 @@ async function savePrinterSettings() {
     const formData = new URLSearchParams();
     formData.append('ip', printerIP);
     formData.append('ac', accessCode);
+    formData.append('sn', sn);
     formData.append('rtid', returnToIdleDoor === 'true');
     formData.append('rtit', returnIdleTime);
 
