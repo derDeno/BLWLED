@@ -54,8 +54,8 @@
             <div class="card-body">
                 <h4 class="card-title">Restore</h4>
                 <p class="card-text">Restore your settings by uploading your <em>.blwled</em> file</p>
-                <form id="form-restore-settings" style="margin-top: 10px;">
-                    <div class="input-group"><input class="form-control" type="file" id="restore-selector" accept=".blwled"><button class="btn btn-success" id="restore-upload" type="button">Restore</button></div>
+                <form id="form-restore-settings" style="margin-top: 10px;" method="post" action="/api/backup-upload">
+                    <div class="input-group"><input class="form-control" type="file" id="restore-selector" accept=".blwled" name="restore-file"><button class="btn btn-success" id="restore-upload" type="submit">Restore</button></div>
                 </form>
             </div>
         </div><!-- End: restore -->

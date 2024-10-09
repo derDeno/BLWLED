@@ -389,6 +389,9 @@ void routing(AsyncWebServer &server) {
     pref.begin("printerSettings");
     String printerIp = pref.getString("ip", "");
     String accessCode = pref.getString("ac", "");
+    String sn = pref.getString("sn", "");
+    bool returnToIdleDoor = pref.getBool("rtid", true);
+    int returnToIdleTime = pref.getInt("rtit", 10);
     pref.end();
 
     // wifi settings
@@ -413,6 +416,9 @@ void routing(AsyncWebServer &server) {
     JsonObject printer = doc["printer"].to<JsonObject>();
     printer["ip"] = printerIp;
     printer["ac"] = accessCode;
+    printer["sn"] = sn;
+    printer["rtid"] = returnToIdleDoor;
+    printer["rtit"] = returnToIdleTime;
   
     JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;
@@ -425,12 +431,31 @@ void routing(AsyncWebServer &server) {
   });
 
   server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-    // receive settings file and reboot
-  });
+    request->send(200);
+  }, handleUploadRestore);
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
     // receive ota file and process
   });
-
+  
   server.onNotFound(notFound);
+}
+
+void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+  if (!index) {
+    request->_tempFile = LittleFS.open("/" + filename, "w");
+  }
+
+  if (len) {
+    request->_tempFile.write(data, len);
+  }
+
+  if (final) {
+    request->_tempFile.close();
+    request->redirect("/");
+
+    delay(200);
+  	ESP.restart();
+  }  
 }
