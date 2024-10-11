@@ -444,7 +444,7 @@ void routing(AsyncWebServer &server) {
 void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
 
   if (!index) {
-    request->_tempFile = LittleFS.open("/" + filename, "w");
+    request->_tempFile = LittleFS.open("/" + filename, "w", true);
   }
 
   if (len) {
@@ -453,9 +453,11 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 
   if (final) {
     request->_tempFile.close();
-    request->redirect("/");
 
-    delay(200);
+    // now read the file and create the settings from it and delete it at the end
+
+    LittleFS.remove("/" + filename);
+    delay(500);
   	ESP.restart();
   }  
 }
