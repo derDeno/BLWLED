@@ -454,7 +454,49 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
   if (final) {
     request->_tempFile.close();
 
-    // now read the file and create the settings from it and delete it at the end
+    File backupFile = LittleFS.open("/" + filename, "r");
+    String backupContent = "";
+    if (backupFile) {
+      while (backupFile.available()) {
+        backupContent += backupFile.readString();
+      }
+      backupFile.close();
+    }
+
+    JsonDocument doc;
+    deserializeJson(doc, backupContent);
+
+    // device settings
+    JsonObject device = doc["device"];
+    pref.begin("deviceSettings");
+    pref.putBool("wled", device["wled"]);
+    pref.putInt("count", device["count"]);
+    pref.putString("order", device["order"]);
+
+    pref.putBool("analog", device["analog"]);
+    pref.putString("mode", device["mode"]);
+
+    pref.putBool("sw", device["sw"]);
+    pref.putString("function", device["function"]);
+    pref.end();
+
+    // printer settings
+    JsonObject printer = doc["printer"];
+    pref.begin("printerSettings");
+    pref.putString("ip", printer["ip"]);
+    pref.putString("ac", printer["ac"]);
+    pref.putString("sn", printer["sn"]);
+    pref.putBool("rtid", printer["rtid"]);
+    pref.putInt("rtit", printer["rtit"]);
+    pref.end();
+
+    // wifi settings
+    JsonObject wifi = doc["wifi"];
+    pref.begin("wifi");
+    pref.putBool("setup", true);
+    pref.putString("ssid", wifi["ssid"]);
+    pref.putString("pw", wifi["pw"]);
+    pref.end();
 
     LittleFS.remove("/" + filename);
     delay(500);
