@@ -1,3 +1,4 @@
+#include "esp_sntp.h"
 #include "webserver.h"
 
 String ssid = "Unbekannt";
@@ -18,8 +19,12 @@ void initWifi() {
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print("... ");
+    logger("... ", false);
   }
+
+  // NTP
+  esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+  esp_netif_sntp_init(&config);
 
   logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
   logger(String("BLWLED Hostname: ") + String(WiFi.getHostname()));
@@ -35,7 +40,7 @@ void setup() {
     return;
   }
   logger("=============================");
-  Serial.println("LittleFS mounted successfully");
+  logger("LittleFS mounted successfully", false);
 
   // check prefs if wifi is already setup, else start ap mode
 
