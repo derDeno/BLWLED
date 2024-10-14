@@ -1,0 +1,23 @@
+{
+  "device": {
+    "wled": false,
+    "count": 0,
+    "order": "gbr",
+    "analog": false,
+    "mode": "strip",
+    "switch": false,
+    "function": "event"
+  },
+  "printer": {
+    "ip": "",
+    "ac": "sdsdvsdv",
+    "sn": "1234afafa",
+    "rtid": false,
+    "rtit": 20
+  },
+  "wifi": {
+    "setup": false,
+    "ssid": "",
+    "pw": ""
+  }
+}

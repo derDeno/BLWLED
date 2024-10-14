@@ -2,12 +2,14 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
-#include "ArduinoJson.h"
-#include "nvs_flash.h"
+#include <ArduinoJson.h>
+#include <nvs_flash.h>
+#include <Update.h>
 
-#include <log.h>
+#include "log.h"
 
 Preferences pref;
+uint8_t otaDone = 0;
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -66,10 +68,109 @@ String processorLogs(const String &var) {
   return String();
 }
 
+
+void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+  if (!index) {
+    request->_tempFile = LittleFS.open("/" + filename, "w", true);
+  }
+
+  if (len) {
+    request->_tempFile.write(data, len);
+  }
+
+  if (final) {
+    request->_tempFile.close();
+
+    File backupFile = LittleFS.open("/" + filename, "r");
+    String backupContent = "";
+    if (backupFile) {
+      while (backupFile.available()) {
+        backupContent += backupFile.readString();
+      }
+      backupFile.close();
+    }
+
+    JsonDocument doc;
+    deserializeJson(doc, backupContent);
+
+    // device settings
+    JsonObject device = doc["device"];
+    bool wled = device["wled"];
+    int count = device["count"];
+    const char* order = device["order"];
+    bool analog = device["analog"];
+    const char* mode = device["mode"];
+    bool sw = device["switch"];
+    const char* fnct = device["function"];
+
+    pref.begin("deviceSettings");
+    pref.putBool("wled", wled);
+    pref.putInt("count", count);
+    pref.putString("order", order);
+    pref.putBool("analog", analog);
+    pref.putString("mode", mode);
+    pref.putBool("sw", sw);
+    pref.putString("function", fnct);
+    pref.end();
+
+
+    // printer settings
+    JsonObject printer = doc["printer"];
+    const char* ip = printer["ip"];
+    const char* ac = printer["ac"];
+    const char* sn = printer["sn"];
+    bool rtid = printer["rtid"];
+    int rtit = printer["rtit"];
+
+    pref.begin("printerSettings");
+    pref.putString("ip", ip);
+    pref.putString("ac", ac);
+    pref.putString("sn", sn);
+    pref.putBool("rtid", rtid);
+    pref.putInt("rtit", rtit);
+    pref.end();
+
+
+    // wifi settings
+    JsonObject wifi = doc["wifi"];
+    bool setup = wifi["setup"];
+    const char* ssid = wifi["ssid"];
+    const char* pw = wifi["pw"];
+
+    pref.begin("wifi");
+    pref.putBool("setup", true);
+    pref.putString("ssid", ssid);
+    pref.putString("pw", pw);
+    pref.end();
+
+    LittleFS.remove("/" + filename);
+    delay(500);
+  	ESP.restart();
+  }  
+}
+
+void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  if (!index) {
+    request->_tempFile = LittleFS.open("/" + filename, "w", true);
+  }
+
+  if (len) {
+    request->_tempFile.write(data, len);
+  }
+
+  if (final) {
+    request->_tempFile.close();
+    // process ota file
+  }
+}
+
 void notFound(AsyncWebServerRequest *request) {
   request->send(404, "application/json", "{\"message\":\"Not found\"}");
 }
 
+
+// Filter for serving different files based on the connection status
 void routing(AsyncWebServer &server) {
   // Serve static files from LittleFS
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setFilter(ON_STA_FILTER);
@@ -435,71 +536,8 @@ void routing(AsyncWebServer &server) {
   }, handleUploadRestore);
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-    // receive ota file and process
-  });
+    request->send(200);
+  }, handleUploadOTA);
   
   server.onNotFound(notFound);
-}
-
-void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-
-  if (!index) {
-    request->_tempFile = LittleFS.open("/" + filename, "w", true);
-  }
-
-  if (len) {
-    request->_tempFile.write(data, len);
-  }
-
-  if (final) {
-    request->_tempFile.close();
-
-    File backupFile = LittleFS.open("/" + filename, "r");
-    String backupContent = "";
-    if (backupFile) {
-      while (backupFile.available()) {
-        backupContent += backupFile.readString();
-      }
-      backupFile.close();
-    }
-
-    JsonDocument doc;
-    deserializeJson(doc, backupContent);
-
-    // device settings
-    JsonObject device = doc["device"];
-    pref.begin("deviceSettings");
-    pref.putBool("wled", device["wled"]);
-    pref.putInt("count", device["count"]);
-    pref.putString("order", device["order"]);
-
-    pref.putBool("analog", device["analog"]);
-    pref.putString("mode", device["mode"]);
-
-    pref.putBool("sw", device["sw"]);
-    pref.putString("function", device["function"]);
-    pref.end();
-
-    // printer settings
-    JsonObject printer = doc["printer"];
-    pref.begin("printerSettings");
-    pref.putString("ip", printer["ip"]);
-    pref.putString("ac", printer["ac"]);
-    pref.putString("sn", printer["sn"]);
-    pref.putBool("rtid", printer["rtid"]);
-    pref.putInt("rtit", printer["rtit"]);
-    pref.end();
-
-    // wifi settings
-    JsonObject wifi = doc["wifi"];
-    pref.begin("wifi");
-    pref.putBool("setup", true);
-    pref.putString("ssid", wifi["ssid"]);
-    pref.putString("pw", wifi["pw"]);
-    pref.end();
-
-    LittleFS.remove("/" + filename);
-    delay(500);
-  	ESP.restart();
-  }  
 }

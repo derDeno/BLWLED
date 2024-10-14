@@ -1,5 +1,6 @@
 {
     "prettier.useTabs": true,
     "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
-    "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true
+    "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true,
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
