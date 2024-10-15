@@ -8,6 +8,7 @@
 
 Preferences pref;
 uint8_t otaDone = 0;
+const char* version = "0.0.2";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -23,7 +24,7 @@ String processorInfo(const String &var) {
     return String(WiFi.RSSI());
 
   } else if (var == "TEMPLATE_VERSION") {
-    return F("0.0.1-b");
+    return F(version);
 
   } else if (var == "TEMPLATE_UPTIME") {
     unsigned long uptimeMillis = millis();
