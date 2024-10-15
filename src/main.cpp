@@ -1,4 +1,5 @@
-#include "esp_sntp.h"
+#include "time.h"
+#include "log.h"
 #include "webserver.h"
 
 String ssid = "Unbekannt";
@@ -23,8 +24,8 @@ void initWifi() {
   }
 
   // NTP
-  esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
-  esp_netif_sntp_init(&config);
+  configTime(0, 0, "pool.ntp.org");
+  logger("NTP time is synchronized. Time is in UTC");
 
   logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
   logger(String("BLWLED Hostname: ") + String(WiFi.getHostname()));

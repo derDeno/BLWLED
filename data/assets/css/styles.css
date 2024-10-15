@@ -17,3 +17,7 @@ td:last-child {
   width: 70%;
 }
 
+.logo {
+  filter: invert(100%);
+}
+

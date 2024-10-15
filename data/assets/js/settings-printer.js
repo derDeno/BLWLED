@@ -6,7 +6,7 @@ async function loadPrinterSettings() {
             const settings = await response.json();
             document.getElementById('settings-printer-ip').value = settings.printerIp || '';
             document.getElementById('settings-printer-access-code').value = settings.accessCode || '';
-            document.getElementById('settings-printer-access-code').value = settings.sn || '';
+            document.getElementById('settings-printer-sn').value = settings.sn || '';
             document.getElementById('settings-printer-return-idle-door').value = settings.rtid ? 'true' : 'false';
             document.getElementById('settings-printer-return-idle-time').value = settings.rtit || '';
         } else {
@@ -43,7 +43,7 @@ async function savePrinterSettings() {
         });
 
         if (response.ok) {
-            const alertBox = document.getElementById('alert-saved-printer-connection');
+            const alertBox = document.getElementById('alert-saved-printer-settings');
             alertBox.style.display = 'block';
 
             setTimeout(() => {
@@ -67,7 +67,7 @@ document.getElementById('btn-modal-test-connection-close').addEventListener('cli
     testConnectionModal.hide();
 });
 
-document.getElementById('settings-printer-connection-save').addEventListener('click', function (event) {
+document.getElementById('settings-printer-save').addEventListener('click', function (event) {
     event.preventDefault();
     savePrinterSettings();
 });
@@ -78,5 +78,5 @@ document.getElementById('btn-connection-test').addEventListener('click', functio
 
 window.onload = function () {
     loadPrinterSettings();
-    document.getElementById('alert-saved-printer-connection').style.display = 'none';
+    document.getElementById('alert-saved-printer-settings').style.display = 'none';
 };

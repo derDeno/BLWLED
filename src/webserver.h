@@ -6,8 +6,6 @@
 #include <nvs_flash.h>
 #include <Update.h>
 
-#include "log.h"
-
 Preferences pref;
 uint8_t otaDone = 0;
 
@@ -43,7 +41,12 @@ String processorInfo(const String &var) {
     return uptime;
 
   } else if (var == "TEMPLATE_LOCAL_TIME") {
-    return F("to be added");
+    getLocalTime(&timeinfo);
+    
+    char timeStr[64];
+    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &timeinfo);
+
+    return String(timeStr) + " UTC";
   }
 
   return String();
@@ -51,6 +54,16 @@ String processorInfo(const String &var) {
 
 String processorLogs(const String &var) {
   if (var == "LOG_TEMPLATE") {
+
+    // check if logging is even active
+    pref.begin("deviceSettings");
+    bool logging = pref.getBool("logging", true);
+    pref.end();
+
+    if (!logging) {
+      return "Logging is disabled!";
+    }
+
     File logFile = LittleFS.open("/log.txt", "r");
     String logContent = "";
     if (logFile) {
@@ -103,6 +116,7 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     const char* mode = device["mode"];
     bool sw = device["switch"];
     const char* fnct = device["function"];
+    bool logging = device["logging"];
 
     pref.begin("deviceSettings");
     pref.putBool("wled", wled);
@@ -112,6 +126,7 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     pref.putString("mode", mode);
     pref.putBool("sw", sw);
     pref.putString("function", fnct);
+    pref.putBool("logging", logging);
     pref.end();
 
 
@@ -348,6 +363,8 @@ void routing(AsyncWebServer &server) {
 
     bool sw = pref.getBool("sw", false);
     String fnct = pref.getString("function", "event");
+
+    bool logging = pref.getBool("logging", true);
     pref.end();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -359,6 +376,7 @@ void routing(AsyncWebServer &server) {
     doc["mode"] = mode;
     doc["switch"] = sw;
     doc["function"] = fnct;
+    doc["logging"] = logging;
     serializeJson(doc, *response);
     request->send(response);
   });
@@ -398,6 +416,11 @@ void routing(AsyncWebServer &server) {
     if (request->hasParam("function", true)) {
       String fnct = request->getParam("function", true)->value();
       pref.putString("function", fnct);
+    }
+
+    if (request->hasParam("logging", true)) {
+      bool logging = request->getParam("logging", true)->value();
+      pref.putBool("logging", logging);
     }
 
     pref.end();
@@ -484,6 +507,8 @@ void routing(AsyncWebServer &server) {
 
     bool sw = pref.getBool("sw", false);
     String fnct = pref.getString("function", "event");
+
+    bool logging = pref.getBool("logging", true);
     pref.end();
 
     // printer settings
@@ -513,6 +538,7 @@ void routing(AsyncWebServer &server) {
     device["mode"] = mode;
     device["switch"] = sw;
     device["function"] = fnct;
+    device["logging"] = logging;
 
     JsonObject printer = doc["printer"].to<JsonObject>();
     printer["ip"] = printerIp;
