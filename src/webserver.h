@@ -1,14 +1,20 @@
+#ifndef WEBSERVER_H
+#define WEBSERVER_H
+
 #include <ArduinoJson.h>
-#include <ESPAsyncWebserver.h>
+#include <ESPAsyncWebServer.h>
 #include <Preferences.h>
-#include <Update.h>
 #include <WiFi.h>
+extern AsyncEventSource events;
+
+#include <Update.h>
 #include <WiFiMulti.h>
 #include <nvs_flash.h>
 
 Preferences pref;
 uint8_t otaDone = 0;
-const char *version = "0.0.2";
+size_t totalSize = 0;
+const char *version = "0.0.2-T";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -167,21 +173,27 @@ void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t ind
     if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
       Update.printError(Serial);
     }
+    totalSize = 0;
   }
 
   if (!Update.hasError()) {
     if (Update.write(data, len) != len) {
       Update.printError(Serial);
+    } else {
+      totalSize += len;
+      int progress = (totalSize * 100) / request->contentLength();
+      events.send(String(progress).c_str(), "ota-progress", millis());
     }
   }
 
   if (final) {
     if (Update.end(true)) {
       String msg = "Update Success: " + String(index + len) + "B";
-        logger(msg);
-      } else {
-        Update.printError(Serial);
-      }
+      logger(msg);
+      events.send("100", "ota-progress", millis());
+    } else {
+      Update.printError(Serial);
+    }
   }
 }
 
@@ -561,7 +573,11 @@ void routing(AsyncWebServer &server) {
 
   server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadRestore);
 
-  server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadOTA);
+  server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
+    request->send(200); 
+     ESP.restart(); }, handleUploadOTA);
 
   server.onNotFound(notFound);
 }
+
+#endif

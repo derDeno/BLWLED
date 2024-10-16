@@ -1,5 +1,11 @@
-#include "time.h"
+#include <ArduinoJson.h>
+#include <ESPAsyncWebserver.h>
+#include <LITTLEFS.h>
+#include <Preferences.h>
+#include <WiFi.h>
+
 #include "log.h"
+#include "time.h"
 #include "webserver.h"
 
 String ssid = "Unbekannt";
@@ -7,6 +13,7 @@ String password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
 AsyncWebServer server(80);
+AsyncEventSource events("/events/");
 
 void initWifi() {
   // Connect to Wi-Fi network
@@ -62,6 +69,7 @@ void setup() {
   }
 
   // Start server
+  server.addHandler(&events);
   routing(server);
   server.begin();
   logger("HTTP server started");
@@ -71,7 +79,6 @@ void setup() {
 }
 
 void loop() {
-
   // react to switch press
   int swState = digitalRead(5);
   if (swState == LOW) {
@@ -81,16 +88,15 @@ void loop() {
     String action = pref.getString("function", "");
     pref.end();
 
-    if(swActive) {
-      if(action == "event") {
+    if (swActive) {
+      if (action == "event") {
         // TODO: check for mapping
-      }else if(action == "reboot") {
+      } else if (action == "reboot") {
         ESP.restart();
-      }else {
+      } else {
         // do nothing
       }
     }
-    delay(1000); // debounce
+    delay(1000);  // debounce
   }
-
 }

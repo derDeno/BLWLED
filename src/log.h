@@ -1,3 +1,6 @@
+#ifndef LOG_H
+#define LOG_H
+
 #include <LITTLEFS.h>
 
 struct tm timeinfo;
@@ -25,7 +28,7 @@ void checkLogFileSize(const char* fileName) {
     size_t currentSize = 0;
     while (logFile.available()) {
       String line = logFile.readStringUntil('\n');
-      currentSize += line.length() + 1; // +1 for newline character
+      currentSize += line.length() + 1;  // +1 for newline character
 
       // Once we have skipped enough lines to be under the limit, start storing
       if (currentSize > bytesToTrim) {
@@ -48,9 +51,8 @@ void checkLogFileSize(const char* fileName) {
 }
 
 void logger(String logData, bool file = true) {
-  
   getLocalTime(&timeinfo);
-  
+
   char timeStringBuff[25];
   strftime(timeStringBuff, sizeof(timeStringBuff), "[%Y-%m-%d %H:%M:%S]", &timeinfo);
   String logMessage = String(timeStringBuff) + " - " + logData;
@@ -63,7 +65,7 @@ void logger(String logData, bool file = true) {
   }
 
   checkLogFileSize("/log.txt");
-  
+
   File logFile = LittleFS.open("/log.txt", "a");
   if (!logFile) {
     Serial.println("Failed to open log file");
@@ -73,3 +75,5 @@ void logger(String logData, bool file = true) {
   logFile.println(logMessage);
   logFile.close();
 }
+
+#endif
