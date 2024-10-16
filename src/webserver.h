@@ -1,14 +1,14 @@
+#include <ArduinoJson.h>
 #include <ESPAsyncWebserver.h>
 #include <Preferences.h>
+#include <Update.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
-#include <ArduinoJson.h>
 #include <nvs_flash.h>
-#include <Update.h>
 
 Preferences pref;
 uint8_t otaDone = 0;
-const char* version = "0.0.2";
+const char *version = "0.0.2";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -43,7 +43,7 @@ String processorInfo(const String &var) {
 
   } else if (var == "TEMPLATE_LOCAL_TIME") {
     getLocalTime(&timeinfo);
-    
+
     char timeStr[64];
     strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &timeinfo);
 
@@ -55,7 +55,6 @@ String processorInfo(const String &var) {
 
 String processorLogs(const String &var) {
   if (var == "LOG_TEMPLATE") {
-
     // check if logging is even active
     pref.begin("deviceSettings");
     bool logging = pref.getBool("logging", true);
@@ -82,9 +81,7 @@ String processorLogs(const String &var) {
   return String();
 }
 
-
 void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-
   if (!index) {
     request->_tempFile = LittleFS.open("/" + filename, "w", true);
   }
@@ -112,11 +109,11 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     JsonObject device = doc["device"];
     bool wled = device["wled"];
     int count = device["count"];
-    const char* order = device["order"];
+    const char *order = device["order"];
     bool analog = device["analog"];
-    const char* mode = device["mode"];
+    const char *mode = device["mode"];
     bool sw = device["switch"];
-    const char* fnct = device["function"];
+    const char *fnct = device["function"];
     bool logging = device["logging"];
 
     pref.begin("deviceSettings");
@@ -130,12 +127,11 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     pref.putBool("logging", logging);
     pref.end();
 
-
     // printer settings
     JsonObject printer = doc["printer"];
-    const char* ip = printer["ip"];
-    const char* ac = printer["ac"];
-    const char* sn = printer["sn"];
+    const char *ip = printer["ip"];
+    const char *ac = printer["ac"];
+    const char *sn = printer["sn"];
     bool rtid = printer["rtid"];
     int rtit = printer["rtit"];
 
@@ -147,12 +143,11 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     pref.putInt("rtit", rtit);
     pref.end();
 
-
     // wifi settings
     JsonObject wifi = doc["wifi"];
     bool setup = wifi["setup"];
-    const char* ssid = wifi["ssid"];
-    const char* pw = wifi["pw"];
+    const char *ssid = wifi["ssid"];
+    const char *pw = wifi["pw"];
 
     pref.begin("wifi");
     pref.putBool("setup", true);
@@ -162,29 +157,37 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 
     LittleFS.remove("/" + filename);
     delay(500);
-  	ESP.restart();
-  }  
+    ESP.restart();
+  }
 }
 
 void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
-    request->_tempFile = LittleFS.open("/" + filename, "w", true);
+    logger("Update Start: " + filename);
+    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+      Update.printError(Serial);
+    }
   }
 
-  if (len) {
-    request->_tempFile.write(data, len);
+  if (!Update.hasError()) {
+    if (Update.write(data, len) != len) {
+      Update.printError(Serial);
+    }
   }
 
   if (final) {
-    request->_tempFile.close();
-    // process ota file
+    if (Update.end(true)) {
+      String msg = "Update Success: " + String(index + len) + "B";
+        logger(msg);
+      } else {
+        Update.printError(Serial);
+      }
   }
 }
 
 void notFound(AsyncWebServerRequest *request) {
   request->send(404, "application/json", "{\"message\":\"Not found\"}");
 }
-
 
 // Filter for serving different files based on the connection status
 void routing(AsyncWebServer &server) {
@@ -297,26 +300,25 @@ void routing(AsyncWebServer &server) {
   });
 
   server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {
-
     int networkCount = WiFi.scanComplete();
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
 
     if (networkCount == -2) {
-        WiFi.scanNetworks(true);
-        doc["status"] = "scan_in_progress";
+      WiFi.scanNetworks(true);
+      doc["status"] = "scan_in_progress";
     } else if (networkCount >= 0) {
-        JsonArray networks = doc["networks"].to<JsonArray>();
+      JsonArray networks = doc["networks"].to<JsonArray>();
 
-        for (int i = 0; i < networkCount; ++i) {
-            JsonObject network = networks.add<JsonObject>();
-            network["ssid"] = WiFi.SSID(i);
-            network["rssi"] = WiFi.RSSI(i);
-        }
-        WiFi.scanDelete();
+      for (int i = 0; i < networkCount; ++i) {
+        JsonObject network = networks.add<JsonObject>();
+        network["ssid"] = WiFi.SSID(i);
+        network["rssi"] = WiFi.RSSI(i);
+      }
+      WiFi.scanDelete();
     } else {
-        doc["status"] = "no_networks";
+      doc["status"] = "no_networks";
     }
 
     serializeJson(doc, *response);
@@ -452,7 +454,6 @@ void routing(AsyncWebServer &server) {
   });
 
   server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
-
     pref.begin("printerSettings");
     if (request->hasParam("ip", true)) {
       String printerIp = request->getParam("ip", true)->value();
@@ -547,7 +548,7 @@ void routing(AsyncWebServer &server) {
     printer["sn"] = sn;
     printer["rtid"] = returnToIdleDoor;
     printer["rtit"] = returnToIdleTime;
-  
+
     JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;
     wifi["ssid"] = ssid;
@@ -558,13 +559,9 @@ void routing(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200);
-  }, handleUploadRestore);
+  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadRestore);
 
-  server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-    request->send(200);
-  }, handleUploadOTA);
-  
+  server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadOTA);
+
   server.onNotFound(notFound);
 }
