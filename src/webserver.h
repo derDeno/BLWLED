@@ -15,7 +15,7 @@ AsyncEventSource events("/events");
 Preferences pref;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
-const char *version = "0.0.2-T5";
+const char *version = "0.0.2-T3";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
