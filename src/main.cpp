@@ -1,19 +1,14 @@
-#include <ArduinoJson.h>
-#include <ESPAsyncWebserver.h>
-#include <LITTLEFS.h>
-#include <Preferences.h>
-#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
 
-#include "log.h"
 #include "time.h"
 #include "webserver.h"
+
 
 String ssid = "Unbekannt";
 String password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
 AsyncWebServer server(80);
-AsyncEventSource events("/events");
 
 void initWifi() {
   // Connect to Wi-Fi network
@@ -69,7 +64,6 @@ void setup() {
   }
 
   // Start server
-  server.addHandler(&events);
   routing(server);
   server.begin();
   logger("HTTP server started");

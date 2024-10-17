@@ -1,6 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <Arduino.h>
 #include <LITTLEFS.h>
 
 struct tm timeinfo;
