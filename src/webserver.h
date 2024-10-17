@@ -14,7 +14,7 @@ extern AsyncEventSource events;
 Preferences pref;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
-const char *version = "0.0.2-T";
+const char *version = "0.0.2-T5";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -168,10 +168,13 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 }
 
 void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+  logger("In handler", false);
   if (!index) {
     logger("Update Start: " + filename);
     if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
       Update.printError(Serial);
+      request->send(500, "text/plain", "Update Failed: Could not begin OTA");
+      return;
     }
     totalSize = 0;
   }
@@ -191,8 +194,12 @@ void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t ind
       String msg = "Update Success: " + String(index + len) + "B";
       logger(msg);
       events.send("100", "ota-progress", millis());
+
+      delay(1000);
+      ESP.restart();
     } else {
       Update.printError(Serial);
+      request->send(500, "text/plain", "Update Failed: Could not finalize OTA");
     }
   }
 }
@@ -574,8 +581,8 @@ void routing(AsyncWebServer &server) {
   server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadRestore);
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
-    request->send(200); 
-     ESP.restart(); }, handleUploadOTA);
+    request->send(200);
+  }, handleUploadOTA);
 
   server.onNotFound(notFound);
 }

@@ -13,7 +13,7 @@ String password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
 AsyncWebServer server(80);
-AsyncEventSource events("/events/");
+AsyncEventSource events("/events");
 
 void initWifi() {
   // Connect to Wi-Fi network
