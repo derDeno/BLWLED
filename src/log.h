@@ -2,7 +2,7 @@
 #define LOG_H
 
 #include <Arduino.h>
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 
 struct tm timeinfo;
 const size_t MAX_LOG_FILE_SIZE = 200 * 1024;  // 200 KB
