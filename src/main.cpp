@@ -1,9 +1,10 @@
 #include <ESPAsyncWebServer.h>
+#include <time.h>
 
-#include "action.h"
-#include "time.h"
-#include "webserver.h"
 #include "state.h"
+#include "action.h"
+#include "webserver.h"
+
 
 String ssid = "Unbekannt";
 String password = "ffYkexQAETVIb";
@@ -16,7 +17,7 @@ void initState() {
     pref.begin("deviceSettings", true);
     appState.wled = pref.getBool("wled", true);
     appState.count = pref.getInt("count", 10);
-    appState.order = pref.getString("order", "gbr");
+    appState.order = pref.getChar("order", "gbr");
     appState.analog = pref.getBool("analog", false);
     appState.mode = pref.getInt("mode", 1);
     appState.sw = pref.getBool("sw", false);
@@ -69,14 +70,12 @@ void startupAnimation() {
 
     logger("Startup Animation");
 
-    pref.begin("deviceSettings", true);
-    const int wledPixel = pref.getInt("count", 10);
-    const String order = pref.getString("order", "gbr");
-    String mode = pref.getString("mode", "strip");
-
-    bool wled = pref.getBool("wled", false);
-    bool analog = pref.getBool("analog", false);
-    pref.end();
+    
+    const int wledPixel = appState.count;
+    const char order = appState.order;
+    const int mode = appState.mode;
+    const bool wled = appState.wled;
+    const bool analog = appState.analog;
 
     // wled animation if active
     if (wled) {

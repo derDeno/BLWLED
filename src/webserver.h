@@ -253,10 +253,10 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     String order = pref.getString("order", "gbr");
 
     bool analog = pref.getBool("analog", false);
-    String mode = pref.getString("mode", "strip");
+    int mode = pref.getInt("mode",1);
 
     bool sw = pref.getBool("sw", false);
-    String fnct = pref.getString("function", "event");
+    int fnct = pref.getInt("function", 1);
 
     bool logging = pref.getBool("logging", true);
     pref.end();
@@ -298,8 +298,8 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("mode", true)) {
-      String mode = request->getParam("mode", true)->value();
-      pref.putString("mode", mode);
+      int mode = request->getParam("mode", true)->value().toInt();
+      pref.putInt("mode", mode);
     }
 
     if (request->hasParam("switch", true)) {
@@ -308,8 +308,8 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("function", true)) {
-      String fnct = request->getParam("function", true)->value();
-      pref.putString("function", fnct);
+      int fnct = request->getParam("function", true)->value().toInt();
+      pref.putInt("function", fnct);
     }
 
     if (request->hasParam("logging", true)) {
