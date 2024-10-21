@@ -12,7 +12,7 @@
 
 AsyncEventSource events("/events");
 
-Preferences pref;
+//Preferences pref;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
 const char *version = "0.0.2-T3";
@@ -566,6 +566,11 @@ void setupApiRoutes(AsyncWebServer &server) {
     } else {
       request->send(404, "text/plain", "Log file not found!");
     }
+  });
+
+  server.on("/api/log-delete", HTTP_GET, [](AsyncWebServerRequest *request) {
+    LittleFS.remove("/log.txt");
+    request->redirect("/log");
   });
 
   server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
