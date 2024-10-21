@@ -109,7 +109,7 @@ document.getElementById("btn-reset-modal").addEventListener("click", async funct
 
 	try {
 		const response = await fetch("/api/reset", {
-			method: "GET",
+			method: "POST",
 		});
 
 		if (response.ok) {

@@ -3,12 +3,43 @@
 #include "action.h"
 #include "time.h"
 #include "webserver.h"
+#include "state.h"
 
 String ssid = "Unbekannt";
 String password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
+AppState appState;
 AsyncWebServer server(80);
+
+void initState() {
+    pref.begin("deviceSettings", true);
+    appState.wled = pref.getBool("wled", true);
+    appState.count = pref.getInt("count", 10);
+    appState.order = pref.getString("order", "gbr");
+    appState.analog = pref.getBool("analog", false);
+    appState.mode = pref.getInt("mode", 1);
+    appState.sw = pref.getBool("sw", false);
+    appState.fnct = pref.getInt("function", 1);
+    appState.logging = pref.getBool("logging", true);
+    pref.end();
+
+    pref.begin("printerSettings", true);
+    appState.ip = pref.getChar("ip", "");
+    appState.ac = pref.getString("ac", "");
+    appState.sn = pref.getString("sn", "");
+    appState.rtid = pref.getBool("rtid", true);
+    appState.rtit = pref.getInt("rtit", 10);
+    pref.end();
+    
+    /*
+    pref.begin("wifi", true);
+    pref.getBool("setup", false);
+    pref.getString("ssid", "");
+    pref.getString("pw", "");
+    pref.end();
+    */
+}
 
 void initWifi() {
     // Connect to Wi-Fi network
@@ -132,8 +163,6 @@ void loop() {
                 actionMaintenance();
             } else if (action == "reboot") {
                 ESP.restart();
-            } else {
-                // do nothing
             }
         }
         delay(1000);  // debounce

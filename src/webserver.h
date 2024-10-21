@@ -573,14 +573,14 @@ void setupApiRoutes(AsyncWebServer &server) {
     request->redirect("/log");
   });
 
-  server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     logger("Reset by user");
 
     nvs_flash_erase();
     nvs_flash_init();
 
     request->redirect("/");
-    delay(100);
+    delay(300);
     ESP.restart();
   });
 
