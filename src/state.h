@@ -7,7 +7,7 @@ struct AppState {
     // device states
     bool wled;          // wled active
     uint8_t count;      // number of leds
-    char order[3];      // led order
+    char* order[4];      // led order
     bool analog;        // analog led active
     uint8_t mode;       // 1 = strip, 2 = individual
     bool sw;            // switch active
@@ -19,5 +19,5 @@ struct AppState {
     char ac[16];        // access code
     char sn[16];        // serial number
     bool rtid;          // return to idle after door opened
-    uint8_t rtit;       // return to idle time in seconds
+    uint8_t rtit;       // return to idle time in seconds    
 };

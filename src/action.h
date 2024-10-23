@@ -2,42 +2,42 @@
 #include <FastLED.h>
 #include <Preferences.h>
 
-Preferences pref;
+//Preferences pref;
 bool maintenancenToggle = false;
 
 /**
  * Helper Functions
  */
 
-int outputToPin(String output) {
-    if (output == "analog-r") {
+int outputToPin(char* output) {
+    if (strcmp(output, "analog-r") == 0) {
         return 17;
-    } else if (output == "analog-g") {
+    } else if (strcmp(output, "analog-g") == 0) {
         return 16;
-    } else if (output == "analog-b") {
+    } else if (strcmp(output, "analog-b") == 0) {
         return 4;
-    } else if (output == "analog-ww") {
+    } else if (strcmp(output, "analog-ww") == 0) {
         return 15;
-    } else if (output == "analog-cw") {
+    } else if (strcmp(output, "analog-cw") == 0) {
         return 2;
     } else {
         // default
-        return output.toInt();
+        return atoi(output);
     }
 }
 
-EOrder colorOrderHelper(String order) {
-    if (order == "rgb") {
+EOrder colorOrderHelper(char* order) {
+    if (strcmp(order, "rgb") == 0) {
         return RGB;
-    } else if (order == "rbg") {
+    } else if (strcmp(order, "rbg") == 0) {
         return RBG;
-    } else if (order == "grb") {
+    } else if (strcmp(order, "grb") == 0) {
         return GRB;
-    } else if (order == "gbr") {
+    } else if (strcmp(order, "gbr") == 0) {
         return GBR;
-    } else if (order == "brg") {
+    } else if (strcmp(order, "brg") == 0) {
         return BRG;
-    } else if (order == "bgr") {
+    } else if (strcmp(order, "bgr") == 0) {
         return BGR;
     } else {
         return GRB;
@@ -57,7 +57,7 @@ void hexToRgb(String hexColor, uint8_t &r, uint8_t &g, uint8_t &b) {
 }
 
 // Pin Control action. Perform action defined in mapping
-void actionPinControl(String pin, String control, bool invert = false, int invert_delay = 0, int flash_timout = 0, int flash_count = 0) {
+void actionPinControl(char* pin, String control, bool invert = false, int invert_delay = 0, int flash_timout = 0, int flash_count = 0) {
     int outputPin = outputToPin(pin);
 
     // first check if option is set to flash
@@ -87,21 +87,16 @@ void actionPinControl(String pin, String control, bool invert = false, int inver
 void actionColorWled(String color, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
     const int wledPin = 18;
 
-    pref.begin("deviceSettings", true);
-    const int wledPixel = pref.getInt("count", 10);
-    const String order = pref.getString("order", "gbr");
-    pref.end();
-
     // EOrder colorOrder = colorOrderHelper(order);
-    CRGB leds[wledPixel];
+    CRGB leds[appState.count];
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
 
     // setup fastled
     FastLED.clear(true);
-    FastLED.addLeds<WS2812, wledPin, GBR>(leds, wledPixel).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2812, wledPin, colorOrderHelper(appState.order)>(leds, appState.count).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(brightness);
-    fill_solid(leds, wledPixel, CRGB(r, g, b));
+    fill_solid(leds, appState.count, CRGB(r, g, b));
 
     // first check if to blink
     if (blink) {
@@ -127,7 +122,7 @@ void actionColorWled(String color, int brightness, bool blink = false, int blink
 }
 
 // Color Control action. Perform action defined in mapping
-void actionColor(String color, String r_pin, String g_pin, String b_pin, String ww_pin, String cw_pin, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
+void actionColor(String color, char* r_pin, char* g_pin, char* b_pin, char* ww_pin, char* cw_pin, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
     int pinR = outputToPin(r_pin);
@@ -189,18 +184,17 @@ void actionColor(String color, String r_pin, String g_pin, String b_pin, String 
 
 // Maintenance action. Perform action defined in mapping
 void actionMaintenance() {
-    pref.begin("deviceSettings", true);
-    bool wled = pref.getBool("wled", true);
-    bool analog = pref.getBool("analog", true);
-    String mode = pref.getString("mode", "strip");
-    pref.end();
+    
+    bool wled = appState.wled;
+    bool analog = appState.analog;
+    int mode = appState.mode;
 
     if (!maintenancenToggle) {
         if (wled) {
             actionColorWled("#ffffff", 255);
 
         } else if (analog) {
-            if (mode == "strip") {
+            if (mode == 1) {
                 actionColor("#ffffff", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 255);
             }
         }
@@ -210,7 +204,7 @@ void actionMaintenance() {
             FastLED.clear(true);
 
         } else if (analog) {
-            if (mode == "strip") {
+            if (mode == 1) {
                 actionColor("#000000", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 0);
             }
         }

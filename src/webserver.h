@@ -12,10 +12,8 @@
 
 AsyncEventSource events("/events");
 
-//Preferences pref;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
-const char *version = "0.0.2-T3";
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -31,7 +29,7 @@ String processorInfo(const String &var) {
     return String(WiFi.RSSI());
 
   } else if (var == "TEMPLATE_VERSION") {
-    return F(version);
+    return F(appState.version);
 
   } else if (var == "TEMPLATE_UPTIME") {
     unsigned long uptimeMillis = millis();

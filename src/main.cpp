@@ -1,23 +1,28 @@
 #include <ESPAsyncWebServer.h>
 #include <time.h>
 
-#include "state.h"
 #include "action.h"
+#include "state.h"
 #include "webserver.h"
 
-
-String ssid = "Unbekannt";
-String password = "ffYkexQAETVIb";
+const char* ssid = "Unbekannt";
+const char* password = "ffYkexQAETVIb";
 bool wifiSet = true;
 
 AppState appState;
 AsyncWebServer server(80);
 
+int swState = HIGH;
+int lastSwState = HIGH;
+
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 1000;
+
 void initState() {
     pref.begin("deviceSettings", true);
     appState.wled = pref.getBool("wled", true);
     appState.count = pref.getInt("count", 10);
-    appState.order = pref.getChar("order", "gbr");
+    appState.order = strcpy(pref.getChar("order", "gbr"));
     appState.analog = pref.getBool("analog", false);
     appState.mode = pref.getInt("mode", 1);
     appState.sw = pref.getBool("sw", false);
@@ -26,13 +31,13 @@ void initState() {
     pref.end();
 
     pref.begin("printerSettings", true);
-    appState.ip = pref.getChar("ip", "");
-    appState.ac = pref.getString("ac", "");
-    appState.sn = pref.getString("sn", "");
+    appState.ip = pref.getChar("ip", *"");
+    appState.ac = pref.getChar("ac", *"");
+    appState.sn = pref.getChar("sn", *"");
     appState.rtid = pref.getBool("rtid", true);
     appState.rtit = pref.getInt("rtit", 10);
     pref.end();
-    
+
     /*
     pref.begin("wifi", true);
     pref.getBool("setup", false);
@@ -66,36 +71,31 @@ void initWifi() {
     logger("RSSI: " + String(WiFi.RSSI()));
 }
 
-void startupAnimation() {
+void startupAnimation(void* pvParameters) {
+    Serial.println("Startup Animation");
 
-    logger("Startup Animation");
-
-    
-    const int wledPixel = appState.count;
-    const char order = appState.order;
+    const char* order = appState.order;
     const int mode = appState.mode;
-    const bool wled = appState.wled;
-    const bool analog = appState.analog;
 
     // wled animation if active
-    if (wled) {
-        CRGB leds[wledPixel];
+    if (appState.wled) {
+        CRGB leds[appState.count];
 
-        FastLED.addLeds<WS2812, 18, GBR>(leds, wledPixel).setCorrection(TypicalLEDStrip);
+        FastLED.addLeds<WS2812, 18, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
         FastLED.setBrightness(255);
 
         // fill_solid(leds, wledPixel, CRGB::White);
-        fill_rainbow(leds, wledPixel, 0, 30);
+        fill_rainbow(leds, appState.count, 0, 30);
         FastLED.show();
-        delay(3000);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
         FastLED.clear(true);
     }
 
-    if (analog) {
+    if (appState.analog) {
         int pins[] = {17, 16, 4, 15, 2};
         for (int i = 0; i < 5; i++) {
             analogWrite(pins[i], 255);
-            delay(250);
+            vTaskDelay(250 / portTICK_PERIOD_MS);
             analogWrite(pins[i], 0);
         }
     }
@@ -139,7 +139,8 @@ void setup() {
     pinMode(2, OUTPUT);
     pinMode(18, OUTPUT);
 
-    startupAnimation();
+    // startupAnimation();
+    xTaskCreate(startupAnimation, "LED Animation", 1000, NULL, 1, NULL);
 
     // Start server
     routing(server);
@@ -149,21 +150,29 @@ void setup() {
 
 void loop() {
     // react to switch press
-    int swState = digitalRead(5);
-    if (swState == LOW) {
-        logger("Onboard switch pressed");
-        pref.begin("deviceSettings", true);
-        bool swActive = pref.getBool("sw");
-        String action = pref.getString("function", "");
-        pref.end();
+    int reading = digitalRead(5);
+    if (reading != lastSwState) {
+        lastDebounceTime = millis();
+    }
 
-        if (swActive) {
-            if (action == "event") {
-                actionMaintenance();
-            } else if (action == "reboot") {
-                ESP.restart();
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        if (reading != swState) {
+            swState = reading;
+
+            if (swState == LOW) {
+                logger("Onboard switch pressed");
+                
+                bool swActive = appState.sw;
+                int action = appState.fnct;
+
+                if (swActive) {
+                    if (action == 1) {
+                        actionMaintenance();
+                    } else if (action == 2) {
+                        ESP.restart();
+                    }
+                }
             }
         }
-        delay(1000);  // debounce
     }
 }
