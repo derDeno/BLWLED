@@ -19,5 +19,7 @@ struct AppState {
     char ac[16];        // access code
     char sn[16];        // serial number
     bool rtid;          // return to idle after door opened
-    uint8_t rtit;       // return to idle time in seconds    
+    uint8_t rtit;       // return to idle time in seconds
+
+    void init() {}
 };
