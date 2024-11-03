@@ -2,7 +2,6 @@
 #define WEBSERVER_H
 
 #include <ArduinoJson.h>
-#include <Preferences.h>
 #include <WiFi.h>
 #include <Update.h>
 #include <WiFiMulti.h>

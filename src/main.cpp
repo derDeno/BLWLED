@@ -1,4 +1,6 @@
+#include <Arduino.h>
 #include <ESPAsyncWebServer.h>
+#include <Preferences.h>
 #include <time.h>
 
 #include "action.h"
@@ -11,6 +13,7 @@ bool wifiSet = true;
 
 AppState appState;
 AsyncWebServer server(80);
+Preferences pref;
 
 int swState = HIGH;
 int lastSwState = HIGH;

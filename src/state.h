@@ -20,6 +20,4 @@ struct AppState {
     char sn[16];        // serial number
     bool rtid;          // return to idle after door opened
     uint8_t rtit;       // return to idle time in seconds
-
-    void init() {}
 };
