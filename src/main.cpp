@@ -32,7 +32,7 @@ void initState() {
     pref.begin("deviceSettings", true);
     appState.wled = pref.getBool("wled", true);
     appState.count = pref.getInt("count", 10);
-    strcpy(appState.order, pref.getString("order", "gbr").c_str());
+    strcpy(appState.order, pref.getString("order", "bgr").c_str());
     appState.analog = pref.getBool("analog", false);
     appState.mode = pref.getInt("mode", 1);
     appState.sw = pref.getBool("sw", false);

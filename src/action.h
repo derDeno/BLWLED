@@ -2,10 +2,7 @@
 #include <FastLED.h>
 #include <Preferences.h>
 
-// Declare appState as an external variable
 extern AppState appState;
-
-//Preferences pref;
 bool maintenancenToggle = false;
 
 /**
@@ -30,20 +27,27 @@ int outputToPin(const char* output) {
 }
 
 EOrder colorOrderHelper(const char* order) {
-    if (strcmp(order, "rgb") == 0) {
+    if (String(order).equalsIgnoreCase("rgb")) {
+        Serial.println("i am rgb");
         return RGB;
-    } else if (strcmp(order, "rbg") == 0) {
+    } else if (String(order).equalsIgnoreCase("rbg")) {
+        Serial.println("i am rbg");
         return RBG;
-    } else if (strcmp(order, "grb") == 0) {
-        return GRB;
-    } else if (strcmp(order, "gbr") == 0) {
-        return GBR;
-    } else if (strcmp(order, "brg") == 0) {
+    } else if (String(order).equalsIgnoreCase("brg")) {
+        Serial.println("i am brg");
         return BRG;
-    } else if (strcmp(order, "bgr") == 0) {
+    } else if (String(order).equalsIgnoreCase("bgr")) {
+        Serial.println("i am bgr");
         return BGR;
-    } else {
+    } else if (String(order).equalsIgnoreCase("grb")) {
+        Serial.println("i am grb");
         return GRB;
+    } else if (String(order).equalsIgnoreCase("gbr")) {
+        Serial.println("i am gbr");
+        return GBR;
+    } else {
+        Serial.println("i am else");
+        return GBR;
     }
 }
 
@@ -94,7 +98,7 @@ void actionPinControl(const char* pin, String control, bool invert = false, int 
 // WLED Control action. Perform action defined in mapping
 void actionColorWled(const char* color, int brightness = 255, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
 
-    CRGB leds[appState.count];
+    CRGB leds[100];
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
 
