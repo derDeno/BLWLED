@@ -1,8 +1,18 @@
 #include <Arduino.h>
 
-struct AppState {
+#define WLED_PIN 18
+#define ANALOG_PIN_R 17
+#define ANALOG_PIN_G 16
+#define ANALOG_PIN_B 4
+#define ANALOG_PIN_WW 15
+#define ANALOG_PIN_CW 2
+#define SW_PIN 5
+
+
+struct AppConfig {
+    
     // Constructor
-    AppState() : version("0.1.1-b"), wled(false), count(0), analog(false), mode(1), sw(false), action(1), logging(true), rtid(true), rtit(10) {
+    AppConfig() : version("0.1.1-b"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(false), action(1), logging(true), rtid(true), rtit(10) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -11,6 +21,7 @@ struct AppState {
 
     // system
     const char version[8];
+    char name[12];
 
     // device states
     bool wled;          // wled active

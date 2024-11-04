@@ -9,7 +9,7 @@
 
 extern AsyncEventSource events;
 extern Preferences pref;
-extern AppState appState;
+extern AppConfig appConfig;
 
 uint8_t otaDone = 0;
 size_t totalSize = 0;
@@ -28,7 +28,7 @@ String processorInfo(const String &var) {
     return String(WiFi.RSSI());
 
   } else if (var == "TEMPLATE_VERSION") {
-    return F(appState.version);
+    return F(appConfig.version);
 
   } else if (var == "TEMPLATE_UPTIME") {
     unsigned long uptimeMillis = millis();
