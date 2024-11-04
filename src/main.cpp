@@ -99,9 +99,9 @@ void startupAnimation(void* pvParameters) {
         FastLED.setBrightness(255);
 
         for (int i = 0; i < 255; i++) {
-            uint8_t hue = beatsin8(10, 255);
-            fill_rainbow(leds, appConfig.count, hue, 10);
+            fill_rainbow(leds, appConfig.count, i, 10);
             FastLED.show();
+            delay(50);
         }
 
         vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
