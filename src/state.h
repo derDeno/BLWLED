@@ -3,7 +3,7 @@
 struct AppState {
     // Constructor
     AppState() : version("0.1.1-b"), wled(false), count(0), analog(false), mode(1), sw(false), action(1), logging(true), rtid(true), rtit(10) {
-        strcpy(order, "gbr");
+        strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
         strcpy(sn, "");

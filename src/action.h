@@ -27,6 +27,8 @@ int outputToPin(const char* output) {
 }
 
 EOrder colorOrderHelper(const char* order) {
+    Serial.println("order: " + String(order));
+    
     if (String(order).equalsIgnoreCase("rgb")) {
         Serial.println("i am rgb");
         return RGB;
@@ -47,7 +49,7 @@ EOrder colorOrderHelper(const char* order) {
         return GBR;
     } else {
         Serial.println("i am else");
-        return GBR;
+        return BGR;
     }
 }
 
