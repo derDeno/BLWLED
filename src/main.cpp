@@ -98,13 +98,15 @@ void startupAnimation(void* pvParameters) {
         FastLED.clear(true);
         FastLED.setBrightness(255);
 
-        for (int i = 0; i < 255; i++) {
-            fill_rainbow(leds, appConfig.count, i, 10);
+        int hue = 0;
+        for (int i = 0; i < 2000; i++) {
+            fill_rainbow(leds, appConfig.count, hue, 10);
             FastLED.show();
-            delay(50);
+            hue++;
+            delay(10);
         }
 
-        vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
+        //vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
         FastLED.clear(true);
     }
 
