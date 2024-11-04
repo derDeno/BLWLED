@@ -7,9 +7,9 @@
 #include <WiFiMulti.h>
 #include <nvs_flash.h>
 
-#include "log.h"
-
-AsyncEventSource events("/events");
+extern AsyncEventSource events;
+extern Preferences pref;
+extern AppState appState;
 
 uint8_t otaDone = 0;
 size_t totalSize = 0;

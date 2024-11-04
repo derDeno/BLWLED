@@ -2,7 +2,7 @@
 
 struct AppState {
     // Constructor
-    AppState() : version("0.1.1-b"), wled(false), count(0), analog(false), mode(1), sw(false), fnct(1), logging(true), rtid(true), rtit(10) {
+    AppState() : version("0.1.1-b"), wled(false), count(0), analog(false), mode(1), sw(false), action(1), logging(true), rtid(true), rtit(10) {
         strcpy(order, "gbr");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -19,7 +19,7 @@ struct AppState {
     bool analog;        // analog led active
     uint8_t mode;       // 1 = strip, 2 = individual
     bool sw;            // switch active
-    uint8_t fnct;       // 1 = event, 2 = reboot
+    uint8_t action;       // 1 = event, 2 = reboot
     bool logging;       // logging active
 
     // printer states

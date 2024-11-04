@@ -5,11 +5,13 @@
 #include <FastLED.h>
 
 #include "state.h"
+#include "log.h"
 #include "action.h"
 #include "webserver.h"
 
 AppState appState;
 AsyncWebServer server(80);
+AsyncEventSource events("/events");
 Preferences pref;
 
 int swState = HIGH;
@@ -26,7 +28,7 @@ void initState() {
     appState.analog = pref.getBool("analog", false);
     appState.mode = pref.getInt("mode", 1);
     appState.sw = pref.getBool("sw", false);
-    appState.fnct = pref.getInt("function", 1);
+    appState.action = pref.getInt("function", 1);
     appState.logging = pref.getBool("logging", true);
     pref.end();
 
@@ -80,18 +82,15 @@ const int STARTUP_DELAY_MS = 3000;
 const int ANALOG_DELAY_MS = 250;
 
 void startupAnimation(void* pvParameters) {
-    Serial.println("Startup Animation");
-
     const char* order = appState.order;
     const int mode = appState.mode;
 
     // wled animation if active
     if (appState.wled && appState.count > 0) {
-        static CRGB leds[100]; // Allocate a fixed-size array to avoid dynamic allocation
+        CRGB leds[appState.count];
         FastLED.addLeds<WS2812, WLED_PIN, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
         FastLED.setBrightness(255);
 
-        // fill_solid(leds, wledPixel, CRGB::White);
         fill_rainbow(leds, appState.count, 0, 30);
         FastLED.show();
         vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
@@ -144,7 +143,7 @@ void setup() {
     }
 
     // pins def
-    pinMode(5, INPUT);
+    pinMode(5, INPUT_PULLUP);
     pinMode(17, OUTPUT);
     pinMode(16, OUTPUT);
     pinMode(4, OUTPUT);
@@ -153,7 +152,7 @@ void setup() {
     pinMode(18, OUTPUT);
 
     // startupAnimation();
-    xTaskCreate(startupAnimation, "LED Animation", 1000, NULL, 1, NULL);
+    xTaskCreate(startupAnimation, "LED Animation", 4096, NULL, 1, NULL);
 
     // Start server
     routing(server);
@@ -166,26 +165,21 @@ void loop() {
     int reading = digitalRead(5);
     if (reading != lastSwState) {
         lastDebounceTime = millis();
-    }
 
-    if ((millis() - lastDebounceTime) > debounceDelay) {
-        if (reading != swState) {
-            swState = reading;
-
-            if (swState == LOW) {
-                logger("Onboard switch pressed");
-                
-                bool swActive = appState.sw;
-                int action = appState.fnct;
-
-                if (swActive) {
-                    if (action == 1) {
-                        actionMaintenance();
-                    } else if (action == 2) {
-                        ESP.restart();
-                    }
+        if (reading == LOW) {
+            if (appState.sw) {
+                if (appState.action == 1) {
+                    actionMaintenance();
+                } else if (appState.action == 2) {
+                    ESP.restart();
                 }
             }
         }
     }
+
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        lastDebounceTime = millis();
+    }
+
+    lastSwState = reading;
 }

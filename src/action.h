@@ -2,6 +2,9 @@
 #include <FastLED.h>
 #include <Preferences.h>
 
+// Declare appState as an external variable
+extern AppState appState;
+
 //Preferences pref;
 bool maintenancenToggle = false;
 
@@ -89,7 +92,7 @@ void actionPinControl(const char* pin, String control, bool invert = false, int 
 }
 
 // WLED Control action. Perform action defined in mapping
-void actionColorWled(String color, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
+void actionColorWled(const char* color, int brightness = 255, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
     const int wledPin = 18;
 
     CRGB leds[appState.count];
@@ -211,27 +214,22 @@ void actionColor(String color, const char* r_pin, const char* g_pin, const char*
 
 // Maintenance action. Perform action defined in mapping
 void actionMaintenance() {
-    
-    bool wled = appState.wled;
-    bool analog = appState.analog;
-    int mode = appState.mode;
-
     if (!maintenancenToggle) {
-        if (wled) {
-            actionColorWled("#ffffff", 255);
+        if (appState.wled) {
+            actionColorWled("#ffffff", 125);
 
-        } else if (analog) {
-            if (mode == 1) {
+        } else if (appState.analog) {
+            if (appState.mode == 1) {
                 actionColor("#ffffff", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 255);
             }
         }
         maintenancenToggle = true;
     } else {
-        if (wled) {
+        if (appState.wled) {
             FastLED.clear(true);
 
-        } else if (analog) {
-            if (mode == 1) {
+        } else if (appState.analog) {
+            if (appState.mode == 1) {
                 actionColor("#000000", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 0);
             }
         }
