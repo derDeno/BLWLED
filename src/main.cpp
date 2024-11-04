@@ -18,6 +18,8 @@ Preferences pref;
 int swState = HIGH;
 int lastSwState = HIGH;
 
+const int STARTUP_DELAY_MS = 5000;
+const int ANALOG_DELAY_MS = 250;
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
 
@@ -38,8 +40,8 @@ void initState() {
     strcpy(appConfig.order, pref.getString("order", "bgr").c_str());
     appConfig.analog = pref.getBool("analog", false);
     appConfig.mode = pref.getInt("mode", 1);
-    appConfig.sw = pref.getBool("sw", false);
-    appConfig.action = pref.getInt("function", 1);
+    appConfig.sw = pref.getBool("sw", true);
+    appConfig.action = pref.getInt("action", 1);
     appConfig.logging = pref.getBool("logging", true);
     pref.end();
 
@@ -67,7 +69,7 @@ void initWifi() {
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
-    WiFi.setHostname("BLWLED");
+    WiFi.setHostname(appConfig.name);
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     logger("Connecting to WiFi...");
@@ -87,21 +89,21 @@ void initWifi() {
     logger("RSSI: " + String(WiFi.RSSI()));
 }
 
-const int STARTUP_DELAY_MS = 3000;
-const int ANALOG_DELAY_MS = 250;
-
 void startupAnimation(void* pvParameters) {
-    const char* order = appConfig.order;
-    const int mode = appConfig.mode;
 
     // wled animation if active
     if (appConfig.wled && appConfig.count > 0) {
         CRGB leds[appConfig.count];
-        FastLED.addLeds<WS2812, WLED_PIN, GBR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+        FastLED.addLeds<WS2812, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+        FastLED.clear(true);
         FastLED.setBrightness(255);
 
-        fill_rainbow(leds, appConfig.count, 0, 30);
-        FastLED.show();
+        for (int i = 0; i < 255; i++) {
+            uint8_t hue = beatsin8(10, 255);
+            fill_rainbow(leds, appConfig.count, hue, 10);
+            FastLED.show();
+        }
+
         vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
         FastLED.clear(true);
     }

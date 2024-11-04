@@ -12,7 +12,7 @@
 struct AppConfig {
     
     // Constructor
-    AppConfig() : version("0.1.1-b"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(false), action(1), logging(true), rtid(true), rtit(10) {
+    AppConfig() : version("0.1.1-b"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(true), rtid(true), rtit(10) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -30,7 +30,7 @@ struct AppConfig {
     bool analog;        // analog led active
     uint8_t mode;       // 1 = strip, 2 = individual
     bool sw;            // switch active
-    uint8_t action;       // 1 = event, 2 = reboot
+    uint8_t action;       // 1 = maintenance, 2 = reboot, 3 = disco
     bool logging;       // logging active
 
     // printer states

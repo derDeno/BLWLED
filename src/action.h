@@ -104,8 +104,6 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
 
-    Serial.println("Order: " + String(appConfig.order));
-
     // setup fastled
     FastLED.clear(true);
     EOrder colorOrder = colorOrderHelper(appConfig.order);
@@ -216,7 +214,7 @@ void actionColor(String color, const char* r_pin, const char* g_pin, const char*
 void actionMaintenance() {
     if (!maintenancenToggle) {
         if (appConfig.wled) {
-            actionColorWled("#ffffff", 125);
+            actionColorWled("#ffffff", 50);
 
         } else if (appConfig.analog) {
             if (appConfig.mode == 1) {
