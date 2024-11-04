@@ -1,8 +1,16 @@
 #include <Arduino.h>
 
 struct AppState {
+    // Constructor
+    AppState() : version("0.1.1-b"), wled(false), count(0), analog(false), mode(1), sw(false), fnct(1), logging(true), rtid(true), rtit(10) {
+        strcpy(order, "gbr");
+        strcpy(ip, "");
+        strcpy(ac, "");
+        strcpy(sn, "");
+    }
+
     // system
-    const char version[8] = "0.1.1-b";
+    const char version[8];
 
     // device states
     bool wled;          // wled active

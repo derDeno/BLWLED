@@ -25,7 +25,7 @@ void initState() {
     pref.begin("deviceSettings", true);
     appState.wled = pref.getBool("wled", true);
     appState.count = pref.getInt("count", 10);
-    appState.order = strcpy(pref.getChar("order", "gbr"));
+    strcpy(appState.order, pref.getString("order", "gbr").c_str());
     appState.analog = pref.getBool("analog", false);
     appState.mode = pref.getInt("mode", 1);
     appState.sw = pref.getBool("sw", false);
@@ -34,9 +34,9 @@ void initState() {
     pref.end();
 
     pref.begin("printerSettings", true);
-    appState.ip = pref.getChar("ip", *"");
-    appState.ac = pref.getChar("ac", *"");
-    appState.sn = pref.getChar("sn", *"");
+    strcpy(appState.ip, pref.getString("ip", "").c_str());
+    strcpy(appState.ac, pref.getString("ac", "").c_str());
+    strcpy(appState.sn, pref.getString("sn", "").c_str());
     appState.rtid = pref.getBool("rtid", true);
     appState.rtit = pref.getInt("rtit", 10);
     pref.end();
