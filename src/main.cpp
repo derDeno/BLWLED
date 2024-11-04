@@ -2,14 +2,11 @@
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include <time.h>
+#include <FastLED.h>
 
-#include "action.h"
 #include "state.h"
+#include "action.h"
 #include "webserver.h"
-
-const char* ssid = "Unbekannt";
-const char* password = "ffYkexQAETVIb";
-bool wifiSet = true;
 
 AppState appState;
 AsyncWebServer server(80);
@@ -51,6 +48,9 @@ void initState() {
 }
 
 void initWifi() {
+    const char* ssid = "Unbekannt";
+    const char* password = "ffYkexQAETVIb";
+    
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
@@ -74,6 +74,11 @@ void initWifi() {
     logger("RSSI: " + String(WiFi.RSSI()));
 }
 
+const int WLED_PIN = 18;
+const int ANALOG_PINS[] = {17, 16, 4, 15, 2};
+const int STARTUP_DELAY_MS = 3000;
+const int ANALOG_DELAY_MS = 250;
+
 void startupAnimation(void* pvParameters) {
     Serial.println("Startup Animation");
 
@@ -81,30 +86,33 @@ void startupAnimation(void* pvParameters) {
     const int mode = appState.mode;
 
     // wled animation if active
-    if (appState.wled) {
-        CRGB leds[appState.count];
-
-        FastLED.addLeds<WS2812, 18, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
+    if (appState.wled && appState.count > 0) {
+        static CRGB leds[100]; // Allocate a fixed-size array to avoid dynamic allocation
+        FastLED.addLeds<WS2812, WLED_PIN, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
         FastLED.setBrightness(255);
 
         // fill_solid(leds, wledPixel, CRGB::White);
         fill_rainbow(leds, appState.count, 0, 30);
         FastLED.show();
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
         FastLED.clear(true);
     }
 
     if (appState.analog) {
-        int pins[] = {17, 16, 4, 15, 2};
-        for (int i = 0; i < 5; i++) {
-            analogWrite(pins[i], 255);
-            vTaskDelay(250 / portTICK_PERIOD_MS);
-            analogWrite(pins[i], 0);
+        for (int i = 0; i < sizeof(ANALOG_PINS) / sizeof(ANALOG_PINS[0]); i++) {
+            analogWrite(ANALOG_PINS[i], 255);
+            vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+            analogWrite(ANALOG_PINS[i], 0);
         }
     }
+
+    // Delete the task after execution
+    vTaskDelete(NULL);
 }
 
 void setup() {
+    bool wifiSet = true;
+
     Serial.begin(74880);
 
     // Initialize LittleFS
@@ -115,8 +123,10 @@ void setup() {
     logger("=============================");
     logger("LittleFS mounted successfully", false);
 
-    // check prefs if wifi is already setup, else start ap mode
+    // Initialize application state
+    initState();
 
+    // check prefs if wifi is already setup, else start ap mode
     /* for dev, deactivate
     pref.begin("wifi", false);
     wifiSet = pref.getBool("setup", false);

@@ -9,7 +9,7 @@ bool maintenancenToggle = false;
  * Helper Functions
  */
 
-int outputToPin(char* output) {
+int outputToPin(const char* output) {
     if (strcmp(output, "analog-r") == 0) {
         return 17;
     } else if (strcmp(output, "analog-g") == 0) {
@@ -26,7 +26,7 @@ int outputToPin(char* output) {
     }
 }
 
-EOrder colorOrderHelper(char* order) {
+EOrder colorOrderHelper(const char* order) {
     if (strcmp(order, "rgb") == 0) {
         return RGB;
     } else if (strcmp(order, "rbg") == 0) {
@@ -56,8 +56,13 @@ void hexToRgb(String hexColor, uint8_t &r, uint8_t &g, uint8_t &b) {
     b = strtoul(hexColor.substring(4, 6).c_str(), NULL, 16);  // Blue
 }
 
+
+/**
+ * Actions
+ */
+
 // Pin Control action. Perform action defined in mapping
-void actionPinControl(char* pin, String control, bool invert = false, int invert_delay = 0, int flash_timout = 0, int flash_count = 0) {
+void actionPinControl(const char* pin, String control, bool invert = false, int invert_delay = 0, int flash_timout = 0, int flash_count = 0) {
     int outputPin = outputToPin(pin);
 
     // first check if option is set to flash
@@ -87,14 +92,36 @@ void actionPinControl(char* pin, String control, bool invert = false, int invert
 void actionColorWled(String color, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
     const int wledPin = 18;
 
-    // EOrder colorOrder = colorOrderHelper(order);
     CRGB leds[appState.count];
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
 
     // setup fastled
     FastLED.clear(true);
-    FastLED.addLeds<WS2812, wledPin, colorOrderHelper(appState.order)>(leds, appState.count).setCorrection(TypicalLEDStrip);
+    EOrder colorOrder = colorOrderHelper(appState.order);
+    switch (colorOrder) {
+        case RGB:
+            FastLED.addLeds<WS2812, wledPin, RGB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        case RBG:
+            FastLED.addLeds<WS2812, wledPin, RBG>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        case GRB:
+            FastLED.addLeds<WS2812, wledPin, GRB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        case GBR:
+            FastLED.addLeds<WS2812, wledPin, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        case BRG:
+            FastLED.addLeds<WS2812, wledPin, BRG>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        case BGR:
+            FastLED.addLeds<WS2812, wledPin, BGR>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+        default:
+            FastLED.addLeds<WS2812, wledPin, GRB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            break;
+    }
     FastLED.setBrightness(brightness);
     fill_solid(leds, appState.count, CRGB(r, g, b));
 
@@ -122,7 +149,7 @@ void actionColorWled(String color, int brightness, bool blink = false, int blink
 }
 
 // Color Control action. Perform action defined in mapping
-void actionColor(String color, char* r_pin, char* g_pin, char* b_pin, char* ww_pin, char* cw_pin, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
+void actionColor(String color, const char* r_pin, const char* g_pin, const char* b_pin, const char* ww_pin, const char* cw_pin, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
     int pinR = outputToPin(r_pin);
