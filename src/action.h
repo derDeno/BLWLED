@@ -14,15 +14,15 @@ bool maintenancenToggle = false;
 
 int outputToPin(const char* output) {
     if (strcmp(output, "analog-r") == 0) {
-        return 17;
+        return ANALOG_PIN_R;
     } else if (strcmp(output, "analog-g") == 0) {
-        return 16;
+        return ANALOG_PIN_G;
     } else if (strcmp(output, "analog-b") == 0) {
-        return 4;
+        return ANALOG_PIN_B;
     } else if (strcmp(output, "analog-ww") == 0) {
-        return 15;
+        return ANALOG_PIN_WW;
     } else if (strcmp(output, "analog-cw") == 0) {
-        return 2;
+        return ANALOG_PIN_CW;
     } else {
         // default
         return atoi(output);
@@ -93,7 +93,6 @@ void actionPinControl(const char* pin, String control, bool invert = false, int 
 
 // WLED Control action. Perform action defined in mapping
 void actionColorWled(const char* color, int brightness = 255, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
-    const int wledPin = 18;
 
     CRGB leds[appState.count];
     uint8_t r, g, b;
@@ -104,25 +103,25 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
     EOrder colorOrder = colorOrderHelper(appState.order);
     switch (colorOrder) {
         case RGB:
-            FastLED.addLeds<WS2812, wledPin, RGB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, RGB>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         case RBG:
-            FastLED.addLeds<WS2812, wledPin, RBG>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, RBG>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         case GRB:
-            FastLED.addLeds<WS2812, wledPin, GRB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, GRB>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         case GBR:
-            FastLED.addLeds<WS2812, wledPin, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         case BRG:
-            FastLED.addLeds<WS2812, wledPin, BRG>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, BRG>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         case BGR:
-            FastLED.addLeds<WS2812, wledPin, BGR>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, BGR>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
         default:
-            FastLED.addLeds<WS2812, wledPin, GRB>(leds, appState.count).setCorrection(TypicalLEDStrip);
+            FastLED.addLeds<WS2812, WLED_PIN, GBR>(leds, appState.count).setCorrection(TypicalLEDStrip);
             break;
     }
     FastLED.setBrightness(brightness);
@@ -160,13 +159,6 @@ void actionColor(String color, const char* r_pin, const char* g_pin, const char*
     int pinB = outputToPin(b_pin);
     int pinWW = outputToPin(ww_pin);
     int pinCW = outputToPin(cw_pin);
-
-    // setup analog leds
-    pinMode(pinR, OUTPUT);
-    pinMode(pinG, OUTPUT);
-    pinMode(pinB, OUTPUT);
-    pinMode(pinWW, OUTPUT);
-    pinMode(pinCW, OUTPUT);
 
     // first check if to blink
     if (blink) {

@@ -1,3 +1,11 @@
+#define WLED_PIN 18
+#define ANALOG_PIN_R 17
+#define ANALOG_PIN_G 16
+#define ANALOG_PIN_B 4
+#define ANALOG_PIN_WW 15
+#define ANALOG_PIN_CW 2
+#define SW_PIN 5
+
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
@@ -18,7 +26,7 @@ int swState = HIGH;
 int lastSwState = HIGH;
 
 unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 1000;
+unsigned const long debounceDelay = 1000;
 
 void initState() {
     pref.begin("deviceSettings", true);
@@ -76,8 +84,6 @@ void initWifi() {
     logger("RSSI: " + String(WiFi.RSSI()));
 }
 
-const int WLED_PIN = 18;
-const int ANALOG_PINS[] = {17, 16, 4, 15, 2};
 const int STARTUP_DELAY_MS = 3000;
 const int ANALOG_DELAY_MS = 250;
 
@@ -98,11 +104,29 @@ void startupAnimation(void* pvParameters) {
     }
 
     if (appState.analog) {
-        for (int i = 0; i < sizeof(ANALOG_PINS) / sizeof(ANALOG_PINS[0]); i++) {
-            analogWrite(ANALOG_PINS[i], 255);
-            vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-            analogWrite(ANALOG_PINS[i], 0);
-        }
+        analogWrite(ANALOG_PIN_R, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_R, 0);
+
+        analogWrite(ANALOG_PIN_G, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_G, 0);
+
+        analogWrite(ANALOG_PIN_B, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_B, 0);
+
+        analogWrite(ANALOG_PIN_B, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_B, 0);
+
+        analogWrite(ANALOG_PIN_WW, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_WW, 0);
+
+        analogWrite(ANALOG_PIN_CW, 255);
+        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
+        analogWrite(ANALOG_PIN_CW, 0);
     }
 
     // Delete the task after execution
@@ -143,13 +167,13 @@ void setup() {
     }
 
     // pins def
-    pinMode(5, INPUT_PULLUP);
-    pinMode(17, OUTPUT);
-    pinMode(16, OUTPUT);
-    pinMode(4, OUTPUT);
-    pinMode(15, OUTPUT);
-    pinMode(2, OUTPUT);
-    pinMode(18, OUTPUT);
+    pinMode(SW_PIN, INPUT_PULLUP);
+    pinMode(ANALOG_PIN_R, OUTPUT);
+    pinMode(ANALOG_PIN_G, OUTPUT);
+    pinMode(ANALOG_PIN_B, OUTPUT);
+    pinMode(ANALOG_PIN_CW, OUTPUT);
+    pinMode(ANALOG_PIN_WW, OUTPUT);
+    pinMode(WLED_PIN, OUTPUT);
 
     // startupAnimation();
     xTaskCreate(startupAnimation, "LED Animation", 4096, NULL, 1, NULL);
