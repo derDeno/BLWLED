@@ -85,6 +85,7 @@ String processorLogs(const String &var) {
   return String();
 }
 
+
 void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
     request->_tempFile = LittleFS.open("/" + filename, "w", true);
@@ -111,41 +112,22 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 
     // device settings
     JsonObject device = doc["device"];
-    bool wled = device["wled"];
-    int count = device["count"];
-    const char *order = device["order"];
-    bool analog = device["analog"];
-    const char *mode = device["mode"];
-    bool sw = device["switch"];
-    const char *fnct = device["function"];
-    bool logging = device["logging"];
-
-    pref.begin("deviceSettings");
-    pref.putBool("wled", wled);
-    pref.putInt("count", count);
-    pref.putString("order", order);
-    pref.putBool("analog", analog);
-    pref.putString("mode", mode);
-    pref.putBool("sw", sw);
-    pref.putString("function", fnct);
-    pref.putBool("logging", logging);
-    pref.end();
-
+    appConfig.updateDevice("wled", device["wled"]);
+    appConfig.updateDevice("count", device["count"]);
+    appConfig.updateDevice("order", device["order"]);
+    appConfig.updateDevice("analog", device["analog"]);
+    appConfig.updateDevice("mode", device["mode"]);
+    appConfig.updateDevice("sw", device["switch"]);
+    appConfig.updateDevice("action", device["action"]);
+    appConfig.updateDevice("logging", device["logging"]);
+    
     // printer settings
     JsonObject printer = doc["printer"];
-    const char *ip = printer["ip"];
-    const char *ac = printer["ac"];
-    const char *sn = printer["sn"];
-    bool rtid = printer["rtid"];
-    int rtit = printer["rtit"];
-
-    pref.begin("printerSettings");
-    pref.putString("ip", ip);
-    pref.putString("ac", ac);
-    pref.putString("sn", sn);
-    pref.putBool("rtid", rtid);
-    pref.putInt("rtit", rtit);
-    pref.end();
+    appConfig.updatePrinter("ip", printer["ip"]);
+    appConfig.updatePrinter("ac", printer["ac"]);
+    appConfig.updatePrinter("sn", printer["sn"]);
+    appConfig.updatePrinter("rtid", printer["rtid"]);
+    appConfig.updatePrinter("rtit", printer["rtit"]);
 
     // wifi settings
     JsonObject wifi = doc["wifi"];
@@ -244,141 +226,108 @@ void setupStaticRoutes(AsyncWebServer &server) {
 
 void setupSettingsRoutes(AsyncWebServer &server) {
   server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-    pref.begin("deviceSettings");
-    bool wled = pref.getBool("wled", false);
-    int count = pref.getInt("count", 0);
-    String order = pref.getString("order", "gbr");
-
-    bool analog = pref.getBool("analog", false);
-    int mode = pref.getInt("mode",1);
-
-    bool sw = pref.getBool("sw", false);
-    int fnct = pref.getInt("function", 1);
-
-    bool logging = pref.getBool("logging", true);
-    pref.end();
-
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    doc["wled"] = wled;
-    doc["count"] = count;
-    doc["order"] = order;
-    doc["analog"] = analog;
-    doc["mode"] = mode;
-    doc["switch"] = sw;
-    doc["function"] = fnct;
-    doc["logging"] = logging;
+    doc["wled"] = appConfig.wled;
+    doc["count"] = appConfig.count;
+    doc["order"] = appConfig.order;
+    doc["analog"] = appConfig.analog;
+    doc["mode"] = appConfig.mode;
+    doc["switch"] = appConfig.sw;
+    doc["action"] = appConfig.action;
+    doc["logging"] = appConfig.logging;
     serializeJson(doc, *response);
     request->send(response);
   });
 
   server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
-    pref.begin("deviceSettings");
     if (request->hasParam("wled", true)) {
       bool wled = request->getParam("wled", true)->value();
-      pref.putBool("wled", wled);
+      appConfig.updateDevice("wled", &wled);
     }
 
     if (request->hasParam("count", true)) {
       int count = request->getParam("count", true)->value().toInt();
-      pref.putInt("count", count);
+      appConfig.updateDevice("count", &count);
     }
 
     if (request->hasParam("order", true)) {
       String order = request->getParam("order", true)->value();
-      pref.putString("order", order);
+      appConfig.updateDevice("order", &order);
     }
 
     if (request->hasParam("analog", true)) {
       bool analog = request->getParam("analog", true)->value();
-      pref.putBool("analog", analog);
+      appConfig.updateDevice("analog", &analog);
     }
 
     if (request->hasParam("mode", true)) {
       int mode = request->getParam("mode", true)->value().toInt();
-      pref.putInt("mode", mode);
+      appConfig.updateDevice("mode", &mode);
     }
 
     if (request->hasParam("switch", true)) {
       bool sw = request->getParam("switch", true)->value();
-      pref.putBool("sw", sw);
+      appConfig.updateDevice("sw", &sw);
     }
 
-    if (request->hasParam("function", true)) {
-      int fnct = request->getParam("function", true)->value().toInt();
-      pref.putInt("function", fnct);
+    if (request->hasParam("action", true)) {
+      int action = request->getParam("action", true)->value().toInt();
+      appConfig.updateDevice("action", &action);
     }
 
     if (request->hasParam("logging", true)) {
       bool logging = request->getParam("logging", true)->value();
-      pref.putBool("logging", logging);
+      appConfig.updateDevice("logging", &logging);
     }
 
-    pref.end();
     request->send(200, "application/json", "{\"status\":\"saved\"}");
   });
 
   server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    bool returnToIdleDoor = pref.getBool("rtid", true);
-    int returnToIdleTime = pref.getInt("rtit", 10);
-    pref.end();
-
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    doc["printerIp"] = printerIp;
-    doc["accessCode"] = accessCode;
-    doc["sn"] = sn;
-    doc["rtid"] = returnToIdleDoor;
-    doc["rtit"] = returnToIdleTime;
-    doc["test"] = ESP.getFreeHeap();
+    doc["printerIp"] = appConfig.ip;
+    doc["accessCode"] = appConfig.ac;
+    doc["sn"] = appConfig.sn;
+    doc["rtid"] = appConfig.rtid;
+    doc["rtit"] = appConfig.rtit;
 
     serializeJson(doc, *response);
     request->send(response);
   });
 
   server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
-    pref.begin("printerSettings");
     if (request->hasParam("ip", true)) {
       String printerIp = request->getParam("ip", true)->value();
-      pref.putString("ip", printerIp);
+      appConfig.updatePrinter("ip", &printerIp);
     }
 
     if (request->hasParam("ac", true)) {
       String accessCode = request->getParam("ac", true)->value();
-      pref.putString("ac", accessCode);
+      appConfig.updatePrinter("ac", &accessCode);
     }
 
     if (request->hasParam("sn", true)) {
       String sn = request->getParam("sn", true)->value();
-      pref.putString("sn", sn);
+      appConfig.updatePrinter("sn", &sn);
     }
 
     if (request->hasParam("rtid", true)) {
       bool returnToIdleDoor = request->getParam("rtid", true)->value();
-      pref.putBool("rtid", returnToIdleDoor);
+      appConfig.updatePrinter("rtid", &returnToIdleDoor);
     }
 
     if (request->hasParam("rtit", true)) {
       int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
-      pref.putInt("rtit", returnToIdleTime);
+      appConfig.updatePrinter("rtit", &returnToIdleTime);
     }
 
-    pref.end();
     request->send(200, "application/json", "{\"status\":\"saved\"}");
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // check printer mqtt for info msg
-
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    pref.end();
+    // connect to mqtt and wait for incoming report message
 
     request->send(200, "application/json", "{\"status\":\"success\"}");
   });
@@ -397,7 +346,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
     WiFiMulti wifiMulti;
     wifiMulti.addAP(ssidNew.c_str(), pwNew.c_str());
-    unsigned long startTime = millis();
+    const unsigned long startTime = millis();
     unsigned long timeout = 10000;
 
     // test new connection
@@ -453,7 +402,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 }
 
-
+ 
 void setupMappingRoutes(AsyncWebServer &server) {
   server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
 
@@ -487,30 +436,6 @@ void setupMappingRoutes(AsyncWebServer &server) {
 
 void setupFileRoutes(AsyncWebServer &server) {
   server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // device settings
-    pref.begin("deviceSettings");
-    bool wled = pref.getBool("wled", false);
-    int count = pref.getInt("count", 0);
-    String order = pref.getString("order", "gbr");
-
-    bool analog = pref.getBool("analog", false);
-    String mode = pref.getString("mode", "strip");
-
-    bool sw = pref.getBool("sw", false);
-    String fnct = pref.getString("function", "event");
-
-    bool logging = pref.getBool("logging", true);
-    pref.end();
-
-    // printer settings
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    bool returnToIdleDoor = pref.getBool("rtid", true);
-    int returnToIdleTime = pref.getInt("rtit", 10);
-    pref.end();
-
     // wifi settings
     pref.begin("wifi");
     bool setup = pref.getBool("setup", false);
@@ -522,21 +447,21 @@ void setupFileRoutes(AsyncWebServer &server) {
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
     JsonObject device = doc["device"].to<JsonObject>();
-    device["wled"] = wled;
-    device["count"] = count;
-    device["order"] = order;
-    device["analog"] = analog;
-    device["mode"] = mode;
-    device["switch"] = sw;
-    device["function"] = fnct;
-    device["logging"] = logging;
+    device["wled"] = appConfig.wled;
+    device["count"] = appConfig.count;
+    device["order"] = appConfig.order;
+    device["analog"] = appConfig.analog;
+    device["mode"] = appConfig.mode;
+    device["switch"] = appConfig.sw;
+    device["action"] = appConfig.action;
+    device["logging"] = appConfig.logging;
 
     JsonObject printer = doc["printer"].to<JsonObject>();
-    printer["ip"] = printerIp;
-    printer["ac"] = accessCode;
-    printer["sn"] = sn;
-    printer["rtid"] = returnToIdleDoor;
-    printer["rtit"] = returnToIdleTime;
+    printer["ip"] = appConfig.ip;
+    printer["ac"] = appConfig.ac;
+    printer["sn"] = appConfig.sn;
+    printer["rtid"] = appConfig.rtid;
+    printer["rtit"] = appConfig.rtit;
 
     JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;
@@ -548,7 +473,9 @@ void setupFileRoutes(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadRestore);
+  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
+    request->send(200); 
+  }, handleUploadRestore);
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
     request->send(200);

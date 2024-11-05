@@ -3,5 +3,8 @@
     "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
     "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true,
     "CodeGPT.apiKey": "CodeGPT Plus Beta",
-    "C_Cpp.errorSquiggles": "enabled"
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "random": "cpp"
+    }
 }

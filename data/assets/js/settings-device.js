@@ -4,12 +4,12 @@ async function loadDeviceSettings() {
 		if (response.ok) {
 			const settings = await response.json();
 			document.getElementById("wled-activate").checked = settings.wled;
-			document.getElementById("wled-count").value = settings.count;
-			document.getElementById("wled-order").value = settings.order;
+			document.getElementById("wled-count").value = settings.count || '';
+			document.getElementById("wled-order").value = settings.order || '';
 			document.getElementById("analog-activate").checked = settings.analog;
-			document.getElementById("analog-mode").value = settings.mode;
+			document.getElementById("analog-mode").value = settings.mode || '';
 			document.getElementById("switch-activate").checked = settings.switch;
-			document.getElementById("switch-function").value = settings.function;
+			document.getElementById("switch-action").value = settings.action || '';
 			document.getElementById("debug-log-activate").checked = settings.logging;
 
 			// Toggle visibility of settings based on activation checkboxes
@@ -41,7 +41,7 @@ async function saveDeviceSettings() {
 	formData.append("analog", analogActivate);
 	formData.append("mode", analogMode);
 	formData.append("switch", switchActivate);
-	formData.append("function", switchFunction);
+	formData.append("action", switchFunction);
 	formData.append("logging", loggingActivate);
 
 	try {
