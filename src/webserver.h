@@ -437,7 +437,7 @@ void setupMappingRoutes(AsyncWebServer &server) {
 void setupFileRoutes(AsyncWebServer &server) {
   server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
     // wifi settings
-    pref.begin("wifi");
+    pref.begin("wifi", true);
     bool setup = pref.getBool("setup", false);
     String ssid = pref.getString("ssid", "");
     String pw = pref.getString("pw", "");
