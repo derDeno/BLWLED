@@ -76,7 +76,6 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
     CRGB leds[appConfig.count];
     uint8_t r, g, b;
     hexToRgb(color, r, g, b);
-    FastLED.clear(true);
 
     if (String(appConfig.order).equalsIgnoreCase("rgb")) {
         Serial.println("i am rgb");
@@ -106,6 +105,7 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
         FastLED.addLeds<WS2812, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
     }
 
+    FastLED.clear(true);
     FastLED.setBrightness(brightness);
     fill_solid(leds, appConfig.count, CRGB(r, g, b));
     FastLED.show();

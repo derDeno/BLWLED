@@ -110,24 +110,42 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     JsonDocument doc;
     deserializeJson(doc, backupContent);
 
+
     // device settings
     JsonObject device = doc["device"];
-    appConfig.updateDevice("wled", device["wled"]);
-    appConfig.updateDevice("count", device["count"]);
-    appConfig.updateDevice("order", device["order"]);
-    appConfig.updateDevice("analog", device["analog"]);
-    appConfig.updateDevice("mode", device["mode"]);
-    appConfig.updateDevice("sw", device["switch"]);
-    appConfig.updateDevice("action", device["action"]);
-    appConfig.updateDevice("logging", device["logging"]);
+    const char* name = device["name"];
+    const bool wled = device["wled"];
+    const uint8_t count = device["count"];
+    const char* order = device["order"];
+    const bool analog = device["analog"];
+    const uint8_t mode = device["mode"];
+    const bool sw = device["switch"];
+    const uint8_t action = device["action"];
+    const bool logging = device["logging"];
+
+    appConfig.updateDevice("name", (char*)name);
+    appConfig.updateDevice("wled", (bool*)wled);
+    appConfig.updateDevice("count", (uint8_t*)count);
+    appConfig.updateDevice("order", (char*)order);
+    appConfig.updateDevice("analog", (bool*)analog);
+    appConfig.updateDevice("mode", (uint8_t*)mode);
+    appConfig.updateDevice("sw", (bool*)sw);
+    appConfig.updateDevice("action", (uint8_t*)action);
+    appConfig.updateDevice("logging", (char*)logging);
     
     // printer settings
     JsonObject printer = doc["printer"];
-    appConfig.updatePrinter("ip", printer["ip"]);
-    appConfig.updatePrinter("ac", printer["ac"]);
-    appConfig.updatePrinter("sn", printer["sn"]);
-    appConfig.updatePrinter("rtid", printer["rtid"]);
-    appConfig.updatePrinter("rtit", printer["rtit"]);
+    const char* ip = printer["ip"];
+    const char* ac = printer["ac"];
+    const char* sn = printer["sn"];
+    const bool rtid = printer["rtid"];
+    const uint8_t rtit = printer["rtit"];
+
+    appConfig.updatePrinter("ip", (char*)ip);
+    appConfig.updatePrinter("ac", (char*)ac);
+    appConfig.updatePrinter("sn", (char*)sn);
+    appConfig.updatePrinter("rtid", (bool*)rtid);
+    appConfig.updatePrinter("rtit", (uint8_t*)rtit);
 
     // wifi settings
     JsonObject wifi = doc["wifi"];

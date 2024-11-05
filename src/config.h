@@ -47,39 +47,39 @@ struct AppConfig {
 
         if(strcmp(key, "name") == 0) {
             strcpy(name, (char*)param);
-            pref.putString("name", (char*)param);
+            pref.putString("name", name);
 
     	}else if(strcmp(key, "wled") == 0) {
             wled = (bool)param;
-            pref.putBool("wled", (bool)param);
+            pref.putBool("wled", wled);
 
         }else if(strcmp(key, "count") == 0) {
-            count = (uint8_t)param;
-            pref.putInt("count", (uint8_t)param);
+            count = *(uint8_t*)param;
+            pref.putInt("count", count);
 
         }else if(strcmp(key, "order") == 0) {
             strcpy(order, (char*)param);
-            pref.putString("order", (char*)param);
+            pref.putString("order", order);
 
         }else if(strcmp(key, "analog") == 0) {
             analog = (bool)param;
-            pref.putBool("analog", (bool)param);
+            pref.putBool("analog", analog);
 
         }else if(strcmp(key, "mode") == 0) {
-            mode = (uint8_t)param;
-            pref.putInt("mode", (uint8_t)param);
+            mode = *(uint8_t*)param;
+            pref.putInt("mode", mode);
 
         }else if(strcmp(key, "sw") == 0) {
             sw = (bool)param;
-            pref.putBool("sw", (bool)param);
+            pref.putBool("sw", sw);
 
         }else if(strcmp(key, "action") == 0) {
-            action = (uint8_t)param;
-            pref.putInt("action", (uint8_t)param);
+            action = *(uint8_t*)param;
+            pref.putInt("action", action);
 
         }else if(strcmp(key, "logging") == 0) {
             logging = (bool)param;
-            pref.putBool("logging", (bool)param);
+            pref.putBool("logging", logging);
 
         }
 
@@ -106,8 +106,8 @@ struct AppConfig {
             pref.putBool("rtid", (bool)param);
 
         }else if(strcmp(key, "rtit") == 0) {
-            rtit = (uint8_t)param;
-            pref.putInt("rtit", (uint8_t)param);
+            rtit = *(uint8_t*)param;
+            pref.putInt("rtit", rtit);
         }
 
         pref.end();
