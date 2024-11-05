@@ -2,6 +2,7 @@
 
 extern AppConfig appConfig;
 extern CRGB *leds;
+extern bool wledSetup;
 bool maintenancenToggle = false;
 
 /**
@@ -27,34 +28,31 @@ int outputToPin(const char* output) {
 
 // setup FastLed instance
 void setupWled() {
+    leds = new CRGB[appConfig.count];
 
     if (String(appConfig.order).equalsIgnoreCase("rgb")) {
-        Serial.println("i am rgb");
         FastLED.addLeds<WS2812B, WLED_PIN, RGB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else if (String(appConfig.order).equalsIgnoreCase("rbg")) {
-        Serial.println("i am rbg");
         FastLED.addLeds<WS2812B, WLED_PIN, RBG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else if (String(appConfig.order).equalsIgnoreCase("brg")) {
-        Serial.println("i am brg");
         FastLED.addLeds<WS2812B, WLED_PIN, BRG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else if (String(appConfig.order).equalsIgnoreCase("bgr")) {
-        Serial.println("i am bgr");
         FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else if (String(appConfig.order).equalsIgnoreCase("grb")) {
-        Serial.println("i am grb");
         FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else if (String(appConfig.order).equalsIgnoreCase("gbr")) {
-        Serial.println("i am gbr");
         FastLED.addLeds<WS2812B, WLED_PIN, GBR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
 
     } else {
         FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
     }
+
+    wledSetup = true;
 }
 
 /**
@@ -99,7 +97,6 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
 
     for (int i = 0; i < appConfig.count; i++) {
         leds[i] = CRGB(colorValue);
-        Serial.println(i);
     }
 
     //fill_solid(leds, appConfig.count, CRGB(colorValue));
@@ -193,7 +190,14 @@ void actionColor(const char* color, const char* r_pin, const char* g_pin, const 
 void actionMaintenance() {
     if (!maintenancenToggle) {
         if (appConfig.wled) {
-            actionColorWled("#ff0000", 125);
+
+            Serial.println(wledSetup);
+            
+            if(!wledSetup) {
+                setupWled();
+            }
+
+            actionColorWled("#ffffff", 125);
 
         } else if (appConfig.analog) {
             if (appConfig.mode == 1) {

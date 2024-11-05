@@ -541,6 +541,28 @@ void setupApiRoutes(AsyncWebServer &server) {
     delay(100);
     ESP.restart();
   });
+
+  server.on("/api/color-test", HTTP_POST, [](AsyncWebServerRequest *request) {
+    logger("Color Test");
+
+    if (request->hasParam("color", true)) {
+      String color = request->getParam("color", true)->value();
+
+      if (request->hasParam("brightness", true)) {
+        int brightness = request->getParam("brightness", true)->value().toInt();
+        actionColorWled(color.c_str(), brightness);
+
+      } else {
+        actionColorWled(color.c_str(), 100);
+      }
+    }
+
+    if (request->hasParam("turnoff", true)) {
+      FastLED.clear(true);
+    }
+
+    request->send(200, "application/json", "{\"status\":\"color received\"}");
+  });
 }
 
 

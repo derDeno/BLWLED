@@ -18,6 +18,7 @@ CRGB *leds = nullptr;
 
 int swState = HIGH;
 int lastSwState = HIGH;
+bool wledSetup = false;
 
 const int ANALOG_DELAY_MS = 250;
 unsigned long lastDebounceTime = 0;
@@ -40,7 +41,7 @@ void initState() {
     strcpy(appConfig.name, pref.getString("name", boardName).c_str());
     appConfig.wled = pref.getBool("wled", true);
     appConfig.count = pref.getInt("count", 10);
-    strcpy(appConfig.order, pref.getString("order", "bgr").c_str());
+    strcpy(appConfig.order, pref.getString("order", "grb").c_str());
     appConfig.analog = pref.getBool("analog", false);
     appConfig.mode = pref.getInt("mode", 1);
     appConfig.sw = pref.getBool("sw", true);
@@ -63,6 +64,12 @@ void initState() {
     pref.getString("pw", "");
     pref.end();
     */
+
+    // setup wled
+    if(!wledSetup) {
+        setupWled();
+    }
+    
 }
 
 void initWifi() {
@@ -96,10 +103,6 @@ void startupAnimation(void* pvParameters) {
 
     // wled animation if active
     if (appConfig.wled && appConfig.count > 0) {
-        leds = new CRGB[appConfig.count];
-
-        setupWled();
-
         FastLED.clear(true);
         FastLED.setBrightness(255);
 
