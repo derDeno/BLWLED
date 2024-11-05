@@ -1,6 +1,3 @@
-#ifndef LOG_H
-#define LOG_H
-
 #include <Arduino.h>
 #include <LittleFS.h>
 
@@ -76,5 +73,3 @@ void logger(String logData, bool file = true) {
   logFile.println(logMessage);
   logFile.close();
 }
-
-#endif

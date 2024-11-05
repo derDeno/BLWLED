@@ -31,7 +31,7 @@ async function saveDeviceSettings() {
 	const analogActivate = document.getElementById("analog-activate").checked;
 	const analogMode = document.getElementById("analog-mode").value;
 	const switchActivate = document.getElementById("switch-activate").checked;
-	const switchFunction = document.getElementById("switch-function").value;
+	const switchAction = document.getElementById("switch-action").value;
 	const loggingActivate = document.getElementById("debug-log-activate").checked;
 
 	const formData = new URLSearchParams();
@@ -41,7 +41,7 @@ async function saveDeviceSettings() {
 	formData.append("analog", analogActivate);
 	formData.append("mode", analogMode);
 	formData.append("switch", switchActivate);
-	formData.append("action", switchFunction);
+	formData.append("action", switchAction);
 	formData.append("logging", loggingActivate);
 
 	try {

@@ -14,18 +14,18 @@ AppConfig appConfig;
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 Preferences pref;
+CRGB *leds = nullptr;
 
 int swState = HIGH;
 int lastSwState = HIGH;
 
-const int STARTUP_DELAY_MS = 5000;
 const int ANALOG_DELAY_MS = 250;
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
 
 void initState() {
 
-    pref.begin("deviceSettings", true);
+    pref.begin("deviceSettings");
 
     // check if boardname already set, else set it
     uint64_t mac = ESP.getEfuseMac();  // Get the ESP32's MAC address from the eFuse
@@ -34,7 +34,7 @@ void initState() {
     snprintf(boardName, sizeof(boardName), "BLWLED-%06X", (uint32_t)(mac & 0xFFFFFF));
     //sprintf(boardName, "BLWLED-%d%d%d", random(0, 9), random(0, 9), random(0, 9));
     if (pref.getString("name", "").length() == 0) {
-        appConfig.updateDevice("name", boardName);
+        pref.putString("name", boardName);
     }
 
     strcpy(appConfig.name, pref.getString("name", boardName).c_str());
@@ -96,20 +96,21 @@ void startupAnimation(void* pvParameters) {
 
     // wled animation if active
     if (appConfig.wled && appConfig.count > 0) {
-        CRGB leds[appConfig.count];
-        FastLED.addLeds<WS2812, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+        leds = new CRGB[appConfig.count];
+
+        setupWled();
+
         FastLED.clear(true);
         FastLED.setBrightness(255);
 
         int hue = 0;
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 500; i++) {
             fill_rainbow(leds, appConfig.count, hue, 10);
             FastLED.show();
             hue++;
             delay(10);
         }
 
-        //vTaskDelay(STARTUP_DELAY_MS / portTICK_PERIOD_MS);
         FastLED.clear(true);
     }
 

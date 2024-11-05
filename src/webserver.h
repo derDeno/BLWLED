@@ -1,6 +1,3 @@
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
-
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <Update.h>
@@ -123,15 +120,18 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     const uint8_t action = device["action"];
     const bool logging = device["logging"];
 
-    appConfig.updateDevice("name", (char*)name);
-    appConfig.updateDevice("wled", (bool*)wled);
-    appConfig.updateDevice("count", (uint8_t*)count);
-    appConfig.updateDevice("order", (char*)order);
-    appConfig.updateDevice("analog", (bool*)analog);
-    appConfig.updateDevice("mode", (uint8_t*)mode);
-    appConfig.updateDevice("sw", (bool*)sw);
-    appConfig.updateDevice("action", (uint8_t*)action);
-    appConfig.updateDevice("logging", (char*)logging);
+    pref.begin("deviceSettings");
+    pref.putString("name", name);
+    pref.putBool("wled", wled);
+    pref.putInt("count", count);
+    pref.putString("order", order);
+    pref.putBool("analog", analog);
+    pref.putInt("mode", mode);
+    pref.putBool("sw", sw);
+    pref.putInt("action", action);
+    pref.putBool("logging", logging);
+    pref.end();
+
     
     // printer settings
     JsonObject printer = doc["printer"];
@@ -141,11 +141,13 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     const bool rtid = printer["rtid"];
     const uint8_t rtit = printer["rtit"];
 
-    appConfig.updatePrinter("ip", (char*)ip);
-    appConfig.updatePrinter("ac", (char*)ac);
-    appConfig.updatePrinter("sn", (char*)sn);
-    appConfig.updatePrinter("rtid", (bool*)rtid);
-    appConfig.updatePrinter("rtit", (uint8_t*)rtit);
+    pref.begin("printerSettings");
+    pref.putString("ip", ip);
+    pref.putString("ac", ac);
+    pref.putString("sn", sn);
+    pref.putBool("rtid", rtid);
+    pref.putInt("rtit", rtit);
+    pref.end();
 
     // wifi settings
     JsonObject wifi = doc["wifi"];
@@ -259,47 +261,51 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
+    pref.begin("deviceSettings");
+    
     if (request->hasParam("wled", true)) {
       bool wled = request->getParam("wled", true)->value();
-      appConfig.updateDevice("wled", &wled);
+      pref.putBool("wled", wled);
     }
 
     if (request->hasParam("count", true)) {
       int count = request->getParam("count", true)->value().toInt();
-      appConfig.updateDevice("count", &count);
+      pref.putInt("count", count);
     }
 
     if (request->hasParam("order", true)) {
       String order = request->getParam("order", true)->value();
-      appConfig.updateDevice("order", &order);
+      pref.putString("order", order);
     }
 
     if (request->hasParam("analog", true)) {
       bool analog = request->getParam("analog", true)->value();
-      appConfig.updateDevice("analog", &analog);
+      pref.putBool("analog", analog);
     }
 
     if (request->hasParam("mode", true)) {
       int mode = request->getParam("mode", true)->value().toInt();
-      appConfig.updateDevice("mode", &mode);
+      pref.putInt("mode", mode);
     }
 
     if (request->hasParam("switch", true)) {
       bool sw = request->getParam("switch", true)->value();
-      appConfig.updateDevice("sw", &sw);
+      pref.putBool("sw", sw);
     }
 
     if (request->hasParam("action", true)) {
       int action = request->getParam("action", true)->value().toInt();
-      appConfig.updateDevice("action", &action);
+      pref.putInt("action", action);
     }
 
     if (request->hasParam("logging", true)) {
       bool logging = request->getParam("logging", true)->value();
-      appConfig.updateDevice("logging", &logging);
+      pref.putBool("logging", logging);
     }
+    pref.end();
 
     request->send(200, "application/json", "{\"status\":\"saved\"}");
+    ESP.restart();
   });
 
   server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -316,32 +322,35 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
+    pref.begin("printerSettings");
     if (request->hasParam("ip", true)) {
       String printerIp = request->getParam("ip", true)->value();
-      appConfig.updatePrinter("ip", &printerIp);
+      pref.putString("ip", printerIp);
     }
 
     if (request->hasParam("ac", true)) {
       String accessCode = request->getParam("ac", true)->value();
-      appConfig.updatePrinter("ac", &accessCode);
+      pref.putString("ac", accessCode);
     }
 
     if (request->hasParam("sn", true)) {
       String sn = request->getParam("sn", true)->value();
-      appConfig.updatePrinter("sn", &sn);
+      pref.putString("sn", sn);
     }
 
     if (request->hasParam("rtid", true)) {
       bool returnToIdleDoor = request->getParam("rtid", true)->value();
-      appConfig.updatePrinter("rtid", &returnToIdleDoor);
+      pref.putBool("rtid", returnToIdleDoor);
     }
 
     if (request->hasParam("rtit", true)) {
       int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
-      appConfig.updatePrinter("rtit", &returnToIdleTime);
+      pref.putInt("rtit", returnToIdleTime);
     }
+    pref.end();
 
     request->send(200, "application/json", "{\"status\":\"saved\"}");
+    ESP.restart();
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -553,5 +562,3 @@ void routing(AsyncWebServer &server) {
 
   server.onNotFound(notFound);
 }
-
-#endif

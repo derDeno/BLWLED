@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <FastLED.h>
 
 #define WLED_PIN 18
 #define ANALOG_PIN_R 17
@@ -7,8 +8,6 @@
 #define ANALOG_PIN_WW 15
 #define ANALOG_PIN_CW 2
 #define SW_PIN 5
-
-extern Preferences pref;
 
 struct AppConfig {
     
@@ -40,76 +39,4 @@ struct AppConfig {
     char sn[16];        // serial number
     bool rtid;          // return to idle after door opened
     uint8_t rtit;       // return to idle time in seconds
-
-    // check key and updata param and also update corresponding pref
-    void updateDevice(const char* key, void* param) {
-        pref.begin("deviceSettings");
-
-        if(strcmp(key, "name") == 0) {
-            strcpy(name, (char*)param);
-            pref.putString("name", name);
-
-    	}else if(strcmp(key, "wled") == 0) {
-            wled = (bool)param;
-            pref.putBool("wled", wled);
-
-        }else if(strcmp(key, "count") == 0) {
-            count = *(uint8_t*)param;
-            pref.putInt("count", count);
-
-        }else if(strcmp(key, "order") == 0) {
-            strcpy(order, (char*)param);
-            pref.putString("order", order);
-
-        }else if(strcmp(key, "analog") == 0) {
-            analog = (bool)param;
-            pref.putBool("analog", analog);
-
-        }else if(strcmp(key, "mode") == 0) {
-            mode = *(uint8_t*)param;
-            pref.putInt("mode", mode);
-
-        }else if(strcmp(key, "sw") == 0) {
-            sw = (bool)param;
-            pref.putBool("sw", sw);
-
-        }else if(strcmp(key, "action") == 0) {
-            action = *(uint8_t*)param;
-            pref.putInt("action", action);
-
-        }else if(strcmp(key, "logging") == 0) {
-            logging = (bool)param;
-            pref.putBool("logging", logging);
-
-        }
-
-        pref.end();
-    }
-
-    void updatePrinter(const char* key, void* param) {
-        pref.begin("printerSettings");
-
-        if(strcmp(key, "ip") == 0) {
-            strcpy(ip, (char*)param);
-            pref.putString("ip", (char*)param);
-
-        }else if(strcmp(key, "ac") == 0) {
-            strcpy(ac, (char*)param);
-            pref.putString("ac", (char*)param);
-
-        }else if(strcmp(key, "sn") == 0) {
-            strcpy(sn, (char*)param);
-            pref.putString("sn", (char*)param);
-
-        }else if(strcmp(key, "rtid") == 0) {
-            rtid = (bool)param;
-            pref.putBool("rtid", (bool)param);
-
-        }else if(strcmp(key, "rtit") == 0) {
-            rtit = *(uint8_t*)param;
-            pref.putInt("rtit", rtit);
-        }
-
-        pref.end();
-    }
 };
