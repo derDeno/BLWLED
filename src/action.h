@@ -28,6 +28,7 @@ int outputToPin(const char* output) {
 
 // setup FastLed instance
 void setupWled() {
+    leds = nullptr;
     leds = new CRGB[appConfig.count];
 
     if (String(appConfig.order).equalsIgnoreCase("rgb")) {
@@ -98,8 +99,7 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
     for (int i = 0; i < appConfig.count; i++) {
         leds[i] = CRGB(colorValue);
     }
-
-    //fill_solid(leds, appConfig.count, CRGB(colorValue));
+    
     FastLED.show();
 
     /*
@@ -190,12 +190,11 @@ void actionColor(const char* color, const char* r_pin, const char* g_pin, const 
 void actionMaintenance() {
     if (!maintenancenToggle) {
         if (appConfig.wled) {
-
-            Serial.println(wledSetup);
             
-            if(!wledSetup) {
-                setupWled();
-            }
+            leds = nullptr;
+            leds = new CRGB[appConfig.count];
+
+            Serial.println(appConfig.count);
 
             actionColorWled("#ffffff", 125);
 

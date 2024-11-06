@@ -432,7 +432,45 @@ void setupSettingsRoutes(AsyncWebServer &server) {
  
 void setupMappingRoutes(AsyncWebServer &server) {
   server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
+    pref.begin("mappings");
 
+    nvs_iterator_t it = nvs_entry_find(NULL, "mappings", NVS_TYPE_ANY);
+    if (it == NULL) {
+      Serial.println("No entries found");
+      request->send(404, "application/json", "{\"status\":\"no mappings found!\"}");
+      return;
+    }
+
+    const size_t maxKeys = 256;
+    String keysArray[maxKeys];
+    size_t keyCount = 0;
+
+    while (it != NULL && keyCount < maxKeys) {
+      nvs_entry_info_t info;
+      nvs_entry_info(it, &info);
+      it = nvs_entry_next(it);
+
+      keysArray[keyCount] = String(info.key);
+      Serial.println("Found key: " + keysArray[keyCount]);
+      keyCount++;
+    }
+
+    nvs_release_iterator(it);
+
+    // iterate over keys and get values
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    JsonArray mappings = doc["mappings"].to<JsonArray>();
+
+    for (size_t i = 0; i < keyCount; i++) {
+      JsonObject mapping = mappings.add<JsonObject>();
+      mapping["id"] = keysArray[i];
+      mapping["value"] = pref.getString(keysArray[i].c_str(), "");
+    }
+
+    pref.end();
+    serializeJson(doc, *response);
+    request->send(response);
   });
 
   server.on("/api/mappings", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -442,20 +480,34 @@ void setupMappingRoutes(AsyncWebServer &server) {
   server.on("/api/mappings", HTTP_DELETE, [](AsyncWebServerRequest *request) {
     if (request->hasParam("id")) {
       int id = request->getParam("id")->value().toInt();
+
+      pref.begin("mappings");
+      pref.remove(String(id).c_str());
+      pref.end();
+
+      request->send(200, "application/json", "{\"status\":\"deleted\"}");
     }
   });
 
-  server.on("/api/mapping-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/mappings-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
 
   });
 
-  server.on("/api/mapping-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/mappings-download", HTTP_GET, [](AsyncWebServerRequest *request) {
 
   });
 
   server.on("/api/test-mapping", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (request->hasParam("id")) {
       int id = request->getParam("id")->value().toInt();
+
+      pref.begin("mappings");
+      String value = pref.getString(String(id).c_str(), "");
+      pref.end();
+
+      // fire the action part of the mapping
+
+      request->send(200, "application/json", "{\"status\":\"success\",\"value\":\"" + value + "\"}");
     }
   });
 }
@@ -511,7 +563,7 @@ void setupFileRoutes(AsyncWebServer &server) {
 
 
 void setupApiRoutes(AsyncWebServer &server) {
-   server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (LittleFS.exists("/log.txt")) {
       request->send(LittleFS, "/log.txt", "text/plain", true);
     } else {
@@ -531,14 +583,14 @@ void setupApiRoutes(AsyncWebServer &server) {
     nvs_flash_init();
 
     request->redirect("/");
-    delay(300);
+    delay(800);
     ESP.restart();
   });
 
   server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
     logger("Reboot by user");
     request->redirect("/");
-    delay(100);
+    delay(800);
     ESP.restart();
   });
 

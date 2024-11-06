@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+// Pins Defenition
 #define WLED_PIN 18
 #define ANALOG_PIN_R 17
 #define ANALOG_PIN_G 16
@@ -8,6 +9,18 @@
 #define ANALOG_PIN_WW 15
 #define ANALOG_PIN_CW 2
 #define SW_PIN 5
+
+// Default Pref values
+#define PREF_WLED true
+#define PREF_COUNT 10
+#define PREF_ORDER "grb"
+#define PREF_ANALOG false
+#define PREF_MODE 1
+#define PREF_SW true
+#define PREF_ACTION 1
+#define PREF_LOGGING true
+#define PREF_RTID true
+#define PREF_RTIT 10
 
 struct AppConfig {
     

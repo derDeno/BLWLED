@@ -39,22 +39,22 @@ void initState() {
     }
 
     strcpy(appConfig.name, pref.getString("name", boardName).c_str());
-    appConfig.wled = pref.getBool("wled", true);
-    appConfig.count = pref.getInt("count", 10);
-    strcpy(appConfig.order, pref.getString("order", "grb").c_str());
-    appConfig.analog = pref.getBool("analog", false);
-    appConfig.mode = pref.getInt("mode", 1);
-    appConfig.sw = pref.getBool("sw", true);
-    appConfig.action = pref.getInt("action", 1);
-    appConfig.logging = pref.getBool("logging", true);
+    appConfig.wled = pref.getBool("wled", PREF_WLED);
+    appConfig.count = pref.getInt("count", PREF_COUNT);
+    strcpy(appConfig.order, pref.getString("order", PREF_ORDER).c_str());
+    appConfig.analog = pref.getBool("analog", PREF_ANALOG);
+    appConfig.mode = pref.getInt("mode", PREF_MODE);
+    appConfig.sw = pref.getBool("sw", PREF_SW);
+    appConfig.action = pref.getInt("action", PREF_ACTION);
+    appConfig.logging = pref.getBool("logging", PREF_LOGGING);
     pref.end();
 
     pref.begin("printerSettings", true);
     strcpy(appConfig.ip, pref.getString("ip", "").c_str());
     strcpy(appConfig.ac, pref.getString("ac", "").c_str());
     strcpy(appConfig.sn, pref.getString("sn", "").c_str());
-    appConfig.rtid = pref.getBool("rtid", true);
-    appConfig.rtit = pref.getInt("rtit", 10);
+    appConfig.rtid = pref.getBool("rtid", PREF_RTID);
+    appConfig.rtit = pref.getInt("rtit", PREF_RTIT);
     pref.end();
 
     /*
@@ -68,8 +68,7 @@ void initState() {
     // setup wled
     if(!wledSetup) {
         setupWled();
-    }
-    
+    }  
 }
 
 void initWifi() {
@@ -197,7 +196,6 @@ void setup() {
     server.begin();
     logger("HTTP server started");
     logger(String(appConfig.name) + " is ready!");
-
 }
 
 void loop() {
