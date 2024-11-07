@@ -355,6 +355,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
     // connect to mqtt and wait for incoming report message
+    mqtt_connect();
 
     request->send(200, "application/json", "{\"status\":\"success\"}");
   });

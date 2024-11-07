@@ -7,18 +7,18 @@
 #include "config.h"
 #include "log.h"
 #include "action.h"
-#include "webserver.h"
+#include "events.h"
 #include "mqtt.h"
+#include "webserver.h"
 
 AppConfig appConfig;
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 Preferences pref;
-CRGB *leds = nullptr;
+CRGB* leds;
 
 int swState = HIGH;
 int lastSwState = HIGH;
-bool wledSetup = false;
 
 const int ANALOG_DELAY_MS = 250;
 unsigned long lastDebounceTime = 0;
@@ -50,9 +50,9 @@ void initState() {
     pref.end();
 
     pref.begin("printerSettings", true);
-    strcpy(appConfig.ip, pref.getString("ip", "").c_str());
-    strcpy(appConfig.ac, pref.getString("ac", "").c_str());
-    strcpy(appConfig.sn, pref.getString("sn", "").c_str());
+    strcpy(appConfig.ip, pref.getString("ip", PREF_IP).c_str());
+    strcpy(appConfig.ac, pref.getString("ac", PREF_AC).c_str());
+    strcpy(appConfig.sn, pref.getString("sn", PREF_SN).c_str());
     appConfig.rtid = pref.getBool("rtid", PREF_RTID);
     appConfig.rtit = pref.getInt("rtit", PREF_RTIT);
     pref.end();
@@ -64,11 +64,32 @@ void initState() {
     pref.getString("pw", "");
     pref.end();
     */
+}
 
-    // setup wled
-    if(!wledSetup) {
-        setupWled();
-    }  
+void initWled() {
+    leds = new CRGB[appConfig.count];
+
+    if (String(appConfig.order).equalsIgnoreCase("rgb")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, RGB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else if (String(appConfig.order).equalsIgnoreCase("rbg")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, RBG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else if (String(appConfig.order).equalsIgnoreCase("brg")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, BRG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else if (String(appConfig.order).equalsIgnoreCase("bgr")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else if (String(appConfig.order).equalsIgnoreCase("grb")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else if (String(appConfig.order).equalsIgnoreCase("gbr")) {
+        FastLED.addLeds<WS2812B, WLED_PIN, GBR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+
+    } else {
+        FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
+    }
 }
 
 void initWifi() {
@@ -102,6 +123,7 @@ void startupAnimation(void* pvParameters) {
 
     // wled animation if active
     if (appConfig.wled && appConfig.count > 0) {
+
         FastLED.clear(true);
         FastLED.setBrightness(255);
 
@@ -161,6 +183,7 @@ void setup() {
 
     // Initialize application state
     initState();
+    initWled();
 
     // check prefs if wifi is already setup, else start ap mode
     /* for dev, deactivate
@@ -205,13 +228,7 @@ void loop() {
         lastDebounceTime = millis();
 
         if (reading == LOW) {
-            if (appConfig.sw) {
-                if (appConfig.action == 1) {
-                    actionMaintenance();
-                } else if (appConfig.action == 2) {
-                    ESP.restart();
-                }
-            }
+            eventBus(EVENT_SW_CLICK);
         }
     }
 

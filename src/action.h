@@ -2,8 +2,7 @@
 
 extern AppConfig appConfig;
 extern CRGB *leds;
-extern bool wledSetup;
-bool maintenancenToggle = false;
+
 
 /**
  * Helper Functions
@@ -26,35 +25,6 @@ int outputToPin(const char* output) {
     }
 }
 
-// setup FastLed instance
-void setupWled() {
-    leds = nullptr;
-    leds = new CRGB[appConfig.count];
-
-    if (String(appConfig.order).equalsIgnoreCase("rgb")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, RGB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("rbg")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, RBG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("brg")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, BRG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("bgr")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("grb")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("gbr")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, GBR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else {
-        FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-    }
-
-    wledSetup = true;
-}
 
 /**
  * Actions
@@ -183,38 +153,5 @@ void actionColor(const char* color, const char* r_pin, const char* g_pin, const 
             analogWrite(pinWW, 0);
             analogWrite(pinCW, 0);
         }
-    }
-}
-
-// Maintenance action. Perform action defined in mapping
-void actionMaintenance() {
-    if (!maintenancenToggle) {
-        if (appConfig.wled) {
-            
-            leds = nullptr;
-            leds = new CRGB[appConfig.count];
-
-            Serial.println(appConfig.count);
-
-            actionColorWled("#ffffff", 125);
-
-        } else if (appConfig.analog) {
-            if (appConfig.mode == 1) {
-                actionColor("#ffffff", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 255);
-            }
-        }
-
-        maintenancenToggle = true;
-    } else {
-        if (appConfig.wled) {
-            FastLED.clear(true);
-
-        } else if (appConfig.analog) {
-            if (appConfig.mode == 1) {
-                actionColor("#000000", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 0);
-            }
-        }
-
-        maintenancenToggle = false;
     }
 }

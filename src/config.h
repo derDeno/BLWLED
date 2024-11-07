@@ -22,6 +22,10 @@
 #define PREF_RTID true
 #define PREF_RTIT 10
 
+#define PREF_IP "192.168.1.211"
+#define PREF_AC "a1452429"
+#define PREF_SN "00M09C421800311"
+
 struct AppConfig {
     
     // Constructor set defaults
