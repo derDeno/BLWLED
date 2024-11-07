@@ -4,8 +4,8 @@
 
 extern AppConfig appConfig;
 
-WiFiClientSecure wifiSecureClient;
-PubSubClient mqttClient(wifiSecureClient);
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
 String topic = String("device/") + appConfig.sn + String("/report");
 
 

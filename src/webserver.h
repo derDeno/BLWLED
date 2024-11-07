@@ -241,6 +241,10 @@ void setupStaticRoutes(AsyncWebServer &server) {
   server.on("/settings-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/settings-wifi.html", String(), false);
   });
+
+  server.on("/settings-test", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/settings-test.html", String(), false);
+  });
 }
 
 
@@ -596,25 +600,43 @@ void setupApiRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/color-test", HTTP_POST, [](AsyncWebServerRequest *request) {
-    logger("Color Test");
+    String color = "#FF0000";
+    int output = -1;
+    int brightness = 255;
+    bool turnoff = false;
 
     if (request->hasParam("color", true)) {
-      String color = request->getParam("color", true)->value();
+      color = request->getParam("color", true)->value();
+    }
 
-      if (request->hasParam("brightness", true)) {
-        int brightness = request->getParam("brightness", true)->value().toInt();
-        actionColorWled(color.c_str(), brightness);
+    if (request->hasParam("output", true)) {
+      output = request->getParam("output", true)->value().toInt();
+    }
 
-      } else {
-        actionColorWled(color.c_str(), 100);
-      }
+    if (request->hasParam("brightness", true)) {
+      brightness = request->getParam("brightness", true)->value().toInt();
     }
 
     if (request->hasParam("turnoff", true)) {
-      FastLED.clear(true);
+      turnoff = true;
     }
 
-    request->send(200, "application/json", "{\"status\":\"color received\"}");
+    if(turnoff == true) {
+      if(output == 1) {
+        FastLED.clear(true);
+      }else {
+        actionColorOff("analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw");
+      }
+
+    }else {
+      if(output == 1) {
+        actionColorWled(color.c_str(), brightness);
+      }else if(output == 2) {
+        actionColor(color.c_str(), "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", brightness);
+      }
+    }
+
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
   });
 }
 

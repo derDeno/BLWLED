@@ -155,3 +155,18 @@ void actionColor(const char* color, const char* r_pin, const char* g_pin, const 
         }
     }
 }
+
+
+void actionColorOff(const char* r_pin, const char* g_pin, const char* b_pin, const char* ww_pin, const char* cw_pin) {
+    int pinR = outputToPin(r_pin);
+    int pinG = outputToPin(g_pin);
+    int pinB = outputToPin(b_pin);
+    int pinWW = outputToPin(ww_pin);
+    int pinCW = outputToPin(cw_pin);
+
+    analogWrite(pinR, 0);
+    analogWrite(pinG, 0);
+    analogWrite(pinB, 0);
+    analogWrite(pinWW, 0);
+    analogWrite(pinCW, 0);
+}
