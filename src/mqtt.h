@@ -21,8 +21,9 @@ void mqtt_connect() {
         return;
     }
 
-    mqttClient.setServer(appConfig.ip, 1883);
+    mqttClient.setServer(appConfig.ip, 8883);
     mqttClient.setCallback(mqtt_listen);
+    mqttClient.setSocketTimeout(1);
 
     while (!mqttClient.connected()) {
 
