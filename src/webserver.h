@@ -1,7 +1,5 @@
 #include <ArduinoJson.h>
-#include <WiFi.h>
 #include <Update.h>
-#include <WiFiMulti.h>
 #include <nvs_flash.h>
 
 extern AsyncEventSource events;
@@ -168,7 +166,6 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 }
 
 void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-  logger("In handler", false);
   if (!index) {
     logger("Update Start: " + filename);
     if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
@@ -365,46 +362,28 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String ssidNew;
-    String pwNew;
+    String newSSID;
+    String newPw;
 
     if (request->hasParam("ssid", true)) {
-      ssidNew = request->getParam("ssid", true)->value();
+      newSSID = request->getParam("ssid", true)->value();
     }
 
     if (request->hasParam("pw", true)) {
-      pwNew = request->getParam("pw", true)->value();
+      newPw = request->getParam("pw", true)->value();
     }
 
-    WiFiMulti wifiMulti;
-    wifiMulti.addAP(ssidNew.c_str(), pwNew.c_str());
-    const unsigned long startTime = millis();
-    unsigned long timeout = 10000;
-
-    // test new connection
-    logger("Testing new WiFi connection");
-    while (wifiMulti.run() != WL_CONNECTED && millis() - startTime < timeout) {
-      delay(500);
-      Serial.print(".");
-    }
-
-    if (wifiMulti.run() == WL_CONNECTED) {
-      logger("\nSuccessfully connected to the new WiFi network!");
-      logger("New IP Address: " + WiFi.localIP().toString());
-
-      pref.begin("wifi");
-      pref.putString("ssid", ssidNew);
-      pref.putString("pw", pwNew);
-      pref.end();
-
+    if( changeWifi(newSSID, newPw) == 1) {
       request->send(200, "application/json", "{\"status\":\"success\"}");
       delay(2000);
       ESP.restart();
 
-    } else {
+    }else {
       logger("\nFailed to connect to the new WiFi network. Keeping current connection.");
       request->send(200, "application/json", "{\"status\":\"failed\"}");
     }
+
+    
   });
 
   server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {

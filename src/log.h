@@ -48,7 +48,7 @@ void checkLogFileSize(const char* fileName) {
   }
 }
 
-void logger(String logData, bool file = true) {
+void logger(String logData) {
   getLocalTime(&timeinfo);
 
   char timeStringBuff[25];
@@ -58,7 +58,8 @@ void logger(String logData, bool file = true) {
   Serial.println(logMessage);
   delay(10);
 
-  if (!file) {
+  // if debug logging is false quit
+  if(!appConfig.logging) {
     return;
   }
 

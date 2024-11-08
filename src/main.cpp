@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiMulti.h>
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include <time.h>
@@ -6,9 +8,11 @@
 
 #include "config.h"
 #include "log.h"
+#include "wifi-manager.h"
+#include "led-manager.h"
 #include "action.h"
 #include "events.h"
-#include "mqtt.h"
+#include "mqtt-manager.h"
 #include "webserver.h"
 
 AppConfig appConfig;
@@ -20,9 +24,9 @@ CRGB* leds;
 int swState = HIGH;
 int lastSwState = HIGH;
 
-const int ANALOG_DELAY_MS = 250;
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
+unsigned int wifireconnect = 0;
 
 void initState() {
 
@@ -57,119 +61,17 @@ void initState() {
     appConfig.rtit = pref.getInt("rtit", PREF_RTIT);
     pref.end();
 
-    /*
-    pref.begin("wifi", true);
-    pref.getBool("setup", false);
-    pref.getString("ssid", "");
-    pref.getString("pw", "");
-    pref.end();
-    */
-}
-
-void initWled() {
-    leds = new CRGB[appConfig.count];
-
-    if (String(appConfig.order).equalsIgnoreCase("rgb")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, RGB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("rbg")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, RBG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("brg")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, BRG>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("bgr")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, BGR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("grb")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else if (String(appConfig.order).equalsIgnoreCase("gbr")) {
-        FastLED.addLeds<WS2812B, WLED_PIN, GBR>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-
-    } else {
-        FastLED.addLeds<WS2812B, WLED_PIN, GRB>(leds, appConfig.count).setCorrection(TypicalLEDStrip);
-    }
-}
-
-void initWifi() {
-    const char* ssid = "Unbekannt";
-    const char* password = "ffYkexQAETVIb";
     
-    // Connect to Wi-Fi network
-    WiFi.setTxPower(WIFI_POWER_19_5dBm);
-    WiFi.setSleep(false);
-    WiFi.setHostname(appConfig.name);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-    logger("Connecting to WiFi...");
-
-    // Wait for connection
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        logger("... ", false);
-    }
-
-    // NTP
-    configTime(0, 0, "pool.ntp.org");
-    logger("NTP time is synchronized. Time is in UTC");
-
-    logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
-    logger(String("BLWLED Hostname: ") + String(WiFi.getHostname()));
-    logger("RSSI: " + String(WiFi.RSSI()));
+    pref.begin("wifi", true);
+    appConfig.wifiSet = pref.getBool("set", true);
+    strcpy(appConfig.ssid, pref.getString("ssid", PREF_SSID).c_str());
+    strcpy(appConfig.pass, pref.getString("pass", PREF_PASS).c_str());
+    pref.end();
+    
 }
 
-void startupAnimation(void* pvParameters) {
-
-    // wled animation if active
-    if (appConfig.wled && appConfig.count > 0) {
-
-        FastLED.clear(true);
-        FastLED.setBrightness(255);
-
-        int hue = 0;
-        for (int i = 0; i < 500; i++) {
-            fill_rainbow(leds, appConfig.count, hue, 10);
-            FastLED.show();
-            hue++;
-            delay(10);
-        }
-
-        FastLED.clear(true);
-    }
-
-    if (appConfig.analog) {
-        analogWrite(ANALOG_PIN_R, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_R, 0);
-
-        analogWrite(ANALOG_PIN_G, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_G, 0);
-
-        analogWrite(ANALOG_PIN_B, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_B, 0);
-
-        analogWrite(ANALOG_PIN_B, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_B, 0);
-
-        analogWrite(ANALOG_PIN_WW, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_WW, 0);
-
-        analogWrite(ANALOG_PIN_CW, 255);
-        vTaskDelay(ANALOG_DELAY_MS / portTICK_PERIOD_MS);
-        analogWrite(ANALOG_PIN_CW, 0);
-    }
-
-    // Delete the task after execution
-    vTaskDelete(NULL);
-}
 
 void setup() {
-    bool wifiSet = true;
 
     Serial.begin(74880);
 
@@ -179,27 +81,17 @@ void setup() {
         return;
     }
     logger("=============================");
-    logger("LittleFS mounted successfully", false);
+    logger("LittleFS mounted successfully");
 
     // Initialize application state
     initState();
-    initWled();
+    setupWled();
 
-    // check prefs if wifi is already setup, else start ap mode
-    /* for dev, deactivate
-    pref.begin("wifi", false);
-    wifiSet = pref.getBool("setup", false);
-    ssid = pref.getString("ssid", "");
-    password = pref.getString("pw", "");
-    pref.end();
-    */
-
-    if (!wifiSet) {
-        WiFi.softAP("BLWLED");
+    if (!appConfig.wifiSet) {
         logger("WiFi not setup yet, starting AP");
-
+        setupWifiAp();
     } else {
-        initWifi();
+        setupWifi();
     }
 
     // pins def
@@ -211,17 +103,17 @@ void setup() {
     pinMode(ANALOG_PIN_WW, OUTPUT);
     pinMode(WLED_PIN, OUTPUT);
 
-    // startupAnimation();
-    xTaskCreate(startupAnimation, "LED Animation", 4096, NULL, 1, NULL);
-
     // Start server
     routing(server);
     server.begin();
     logger("HTTP server started");
     logger(String(appConfig.name) + " is ready!");
+
+    startupAnimation();
 }
 
 void loop() {
+
     // react to switch press
     int reading = digitalRead(5);
     if (reading != lastSwState) {
@@ -235,6 +127,22 @@ void loop() {
     if ((millis() - lastDebounceTime) > debounceDelay) {
         lastDebounceTime = millis();
     }
-
     lastSwState = reading;
+
+
+    // capture wifi disconnect
+    if(WiFi.status() != WL_CONNECTED) {
+        logger("Lost WiFi connection");
+        logger("Retrying to connect to " + String(appConfig.ssid));
+
+        wifireconnect += 1;
+
+        if(wifireconnect < 10) {
+            WiFi.disconnect();
+            delay(100);
+            WiFi.reconnect();
+        }else {
+            // 10 reconnection attempts failed, try other methods
+        }
+    }
 }

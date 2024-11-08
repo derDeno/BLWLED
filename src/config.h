@@ -18,22 +18,27 @@
 #define PREF_MODE 1
 #define PREF_SW true
 #define PREF_ACTION 1
-#define PREF_LOGGING true
+#define PREF_LOGGING false
 #define PREF_RTID true
 #define PREF_RTIT 10
 
+// Dev defaults
 #define PREF_IP "192.168.1.211"
 #define PREF_AC "a1452429"
 #define PREF_SN "00M09C421800311"
+#define PREF_SSID "Unbekannt"
+#define PREF_PASS "ffYkexQAETVIb"
 
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version("0.1.1-b"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(true), rtid(true), rtit(10) {
+    AppConfig() : version("0.1.1-b"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
         strcpy(sn, "");
+        strcpy(ssid, "");
+        strcpy(pass, "");
     }
 
     // system
@@ -56,4 +61,9 @@ struct AppConfig {
     char sn[16];        // serial number
     bool rtid;          // return to idle after door opened
     uint8_t rtit;       // return to idle time in seconds
+
+    // WiFi settings
+    bool wifiSet;      // Was WiFi already set up
+    char ssid[33];      // WiFi ssid
+    char pass[64];      // WiFi password
 };
