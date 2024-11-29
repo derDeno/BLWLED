@@ -70,7 +70,6 @@ void initState() {
     
 }
 
-
 void setup() {
 
     Serial.begin(74880);
