@@ -1,3 +1,5 @@
+extern AppConfig appConfig;
+extern CRGB *leds;
 
 void setupWled() {
     leds = new CRGB[appConfig.count];

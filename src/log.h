@@ -3,6 +3,7 @@
 
 struct tm timeinfo;
 const size_t MAX_LOG_FILE_SIZE = 200 * 1024;  // 200 KB
+extern AppConfig appConfig;
 
 void checkLogFileSize(const char* fileName) {
   File logFile = LittleFS.open(fileName, "r");

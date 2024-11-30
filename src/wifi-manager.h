@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+extern AppConfig appConfig;
+extern Preferences pref;
+
 // setup WiFi
 void setupWifi() {
     const char* ssid = "Unbekannt";
