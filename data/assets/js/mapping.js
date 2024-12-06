@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	document.getElementById("alert-update").style.display = "none";
 
 	async function checkForUpdates() {
-		const currentVersion = "0.1.1-alpha";
+		const currentVersion = "0.1.0-alpha";
 		const url = `https://api.github.com/repos/derDeno/BLWLED/releases/latest`;
 
 		try {
