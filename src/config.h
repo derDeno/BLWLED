@@ -32,7 +32,7 @@
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version("0.1.2"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false) {
+    AppConfig() : version("0.1.1-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -42,7 +42,7 @@ struct AppConfig {
     }
 
     // system
-    const char version[8];
+    const char version[13];
     char name[14];
 
     // device states
