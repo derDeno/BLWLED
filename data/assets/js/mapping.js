@@ -368,6 +368,47 @@ document.addEventListener("DOMContentLoaded", function () {
 		resetModalForm();
 	});
 
+	// Check for update
+	document.getElementById("alert-update").style.display = "none";
+
+	async function checkForUpdates() {
+		const currentVersion = "0.1.2";
+		const url = `https://api.github.com/repos/derDeno/BLWLED/releases/latest`;
+
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				console.log(`GitHub API returned an error: ${response.status}`);
+			}
+
+			const releaseData = await response.json();
+			const latestVersion = releaseData.tag_name.replace(/^v/, ""); // Remove "v" if present
+
+			if (isNewerVersion(latestVersion, currentVersion)) {
+				console.log(`A newer version is available: ${latestVersion}`);
+				document.getElementById("alert-update").style.display = "block";
+			}
+
+		} catch (error) {
+			console.error(`Error checking for updates: ${error.message}`);
+		}
+	}
+
+	function isNewerVersion(latest, current) {
+		const latestParts = latest.split(".").map(Number);
+		const currentParts = current.split(".").map(Number);
+
+		for (let i = 0; i < latestParts.length; i++) {
+			if (latestParts[i] > (currentParts[i] || 0)) {
+				return true;
+			} else if (latestParts[i] < (currentParts[i] || 0)) {
+				return false;
+			}
+		}
+		return false;
+	}
+
 	updateNoMappingText();
 	updateFormBasedOnSettings();
+	checkForUpdates();
 });

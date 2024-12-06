@@ -24,6 +24,11 @@
         </div>
     </nav><!-- End: Navbar Right Links (Dark) -->
     <div class="container" style="margin-top: 20px;margin-bottom: 20px;">
+        <div class="row" id="alert-update">
+            <div class="col">
+                <div class="alert alert-warning" role="alert"><span><strong>Update Available!&nbsp; </strong>New Firmware Version is available.&nbsp;</span><a class="alert-link" href="https://github.com/derDeno/BLWLED/releases"><span style="font-weight: normal !important;">Check here</span></a></div>
+            </div>
+        </div>
         <div class="row text-end" style="margin-bottom: 10px;">
             <div class="col"><button class="btn btn-primary" id="btn-add-mapping" type="button">Add Mapping</button></div>
         </div>
@@ -100,6 +105,7 @@
                             <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Pin Control&nbsp; &nbsp; &nbsp;</span><select class="form-select" id="mapping-action-pin-control">
                                     <option value="on" selected="">On</option>
                                     <option value="off">Off</option>
+                                    <option value="flash">Flash</option>
                                 </select></div>
                             <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Invert After x s</span><select class="form-select" id="mapping-action-pin-invert">
                                     <option value="true">Yes</option>

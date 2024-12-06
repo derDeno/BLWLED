@@ -41,9 +41,11 @@ document.getElementById("btn-test-send").addEventListener("click", async functio
 });
 
 document.getElementById("btn-test-off").addEventListener("click", async function () {
+	const output = document.getElementById("test-output");
 
 	const formData = new URLSearchParams();
-	formData.append("turnoff", "");
+	formData.append("turnoff", true);
+	formData.append("output", output.value);
 
     try {
 		const response = await fetch("/api/color-test", {
