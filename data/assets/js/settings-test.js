@@ -22,7 +22,7 @@ document.getElementById("btn-test-send").addEventListener("click", async functio
     formData.append("output", output.value);
 
     try {
-		const response = await fetch("/api/color-test", {
+		const response = await fetch("/api/color", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
@@ -48,7 +48,7 @@ document.getElementById("btn-test-off").addEventListener("click", async function
 	formData.append("output", output.value);
 
     try {
-		const response = await fetch("/api/color-test", {
+		const response = await fetch("/api/color", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",

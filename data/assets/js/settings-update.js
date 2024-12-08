@@ -1,20 +1,15 @@
 async function uploadOTA() {
-	const formData = new FormData();
+	const formData = new URLSearchParams();
 	const file = document.getElementById("ota-selector").files[0];
-	
-	if(!file) {
-		return;
-	}
-
-	formData.append("file", file, file.name);
+	formData.append("file", file);
 
 	try {
 		const response = await fetch("/api/ota-upload", {
 			method: "POST",
 			headers: {
-				"Content-Type": "multipart/form-data",
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
-			body: formData,
+			body: formData.toString(),
 		});
 
 		if (response.ok) {

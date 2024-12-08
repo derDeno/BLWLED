@@ -37,7 +37,6 @@ void initState() {
     char boardName[14];
     
     snprintf(boardName, sizeof(boardName), "BLWLED-%06X", (uint32_t)(mac & 0xFFFFFF));
-    //sprintf(boardName, "BLWLED-%d%d%d", random(0, 9), random(0, 9), random(0, 9));
     if (pref.getString("name", "").length() == 0) {
         pref.putString("name", boardName);
     }

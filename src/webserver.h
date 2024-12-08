@@ -356,9 +356,14 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
     // connect to mqtt and wait for incoming report message
-    mqtt_connect();
 
-    request->send(200, "application/json", "{\"status\":\"success\"}");
+    try {
+      mqtt_connect();
+      request->send(200, "application/json", "{\"success\":\"true\"}");
+    } catch (const std::exception &e) {
+      request->send(200, "application/json", "{\"success\":\"false\"}");
+      return;
+    }
   });
 
   server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -578,7 +583,7 @@ void setupApiRoutes(AsyncWebServer &server) {
     ESP.restart();
   });
 
-  server.on("/api/color-test", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/color", HTTP_POST, [](AsyncWebServerRequest *request) {
     String color = "#FF0000";
     int output = -1;
     int brightness = 255;

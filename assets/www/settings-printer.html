@@ -13,7 +13,7 @@
 <body style="background: rgb(214,214,214);">
     <!-- Start: Navbar Right Links (Dark) -->
     <nav class="navbar navbar-expand-md bg-dark py-3" data-bs-theme="dark">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-5">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Mapping</a></li>
@@ -53,7 +53,10 @@
                     <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Return to idle after x s</span><input class="form-control" type="number" id="settings-printer-return-idle-time" min="1" step="1" placeholder="10s"></div>
                 </form>
             </div>
-        </div><!-- End: event settings --><input class="btn btn-primary w-100" type="submit" id="settings-printer-save" value="Save" style="margin-bottom: 10px;">
+        </div><!-- End: event settings -->
+        <div class="row">
+            <div class="col"><input class="btn btn-primary" type="submit" id="settings-printer-save" value="Save" style="margin-bottom: 10px;"></div>
+        </div>
     </div>
     <div class="modal fade" role="dialog" tabindex="-1" data-bs-backdrop="static" id="modal-test-connection">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -62,7 +65,7 @@
                     <h4 class="modal-title">Test Printer Connection</h4>
                 </div>
                 <div class="modal-body">
-                    <p style="margin-bottom: 10px;">Testing Connection...</p>
+                    <p id="modal-test-connection-testing" style="margin-bottom: 10px;">Testing Connection...</p>
                     <p class="text-success" id="modal-test-connection-success" style="margin-bottom: 10px;"><strong>Connected!</strong></p>
                     <p class="text-danger" id="modal-test-connection-fail" style="margin-bottom: 10px;"><strong>Connection failed!</strong></p>
                 </div>
