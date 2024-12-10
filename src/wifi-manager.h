@@ -1,7 +1,26 @@
 #include <Arduino.h>
+#include <ESPmDNS.h>
 
 extern AppConfig appConfig;
 extern Preferences pref;
+
+//setup mDNS
+void setupMDNS() {
+    if (MDNS.begin("blwled")) {
+        logger("Hostname set to http://blwled.local");
+
+    } else {
+        // Preferred hostname failed, try the fallback
+        String hostname = String(appConfig.name);
+        Serial.println("Preferred hostname 'blwled' is already in use, trying fallback...");
+        if (MDNS.begin(hostname)) {
+            logger("Hostname set to http://" + hostname +".local");
+            
+        } else {
+            logger("Failed to start mDNS with fallback hostname!");
+        }
+    }
+}
 
 // setup WiFi
 void setupWifi() {
@@ -21,6 +40,9 @@ void setupWifi() {
         delay(500);
         logger("... ");
     }
+
+    // mDNS
+    setupMDNS();
 
     // NTP
     configTime(0, 0, "pool.ntp.org");
