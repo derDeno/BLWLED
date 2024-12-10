@@ -7,6 +7,7 @@ extern Preferences pref;
 //setup mDNS
 void setupMDNS() {
     if (MDNS.begin("blwled")) {
+        MDNS.addService("http", "tcp", 80);
         logger("Hostname set to http://blwled.local");
 
     } else {
@@ -14,6 +15,7 @@ void setupMDNS() {
         String hostname = String(appConfig.name);
         Serial.println("Preferred hostname 'blwled' is already in use, trying fallback...");
         if (MDNS.begin(hostname)) {
+            MDNS.addService("http", "tcp", 80);
             logger("Hostname set to http://" + hostname +".local");
             
         } else {
