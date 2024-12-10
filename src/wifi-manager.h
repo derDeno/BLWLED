@@ -32,7 +32,6 @@ void setupWifi() {
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
-    WiFi.setHostname(appConfig.name);
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     logger("Connecting to WiFi...");
