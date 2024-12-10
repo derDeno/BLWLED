@@ -64,6 +64,7 @@ void logger(String logData) {
     return;
   }
 
+  // logging set to true so log to file
   checkLogFileSize("/log.txt");
 
   File logFile = LittleFS.open("/log.txt", "a");

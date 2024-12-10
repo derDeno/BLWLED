@@ -32,6 +32,7 @@ void setupWifi() {
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
+    WiFi.setHostname(appConfig.name);
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     logger("Connecting to WiFi...");
@@ -48,10 +49,7 @@ void setupWifi() {
     // NTP
     configTime(0, 0, "pool.ntp.org");
     logger("NTP time is synchronized. Time is in UTC");
-
     logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
-    logger(String("BLWLED Hostname: ") + String(WiFi.getHostname()));
-    logger("RSSI: " + String(WiFi.RSSI()));
 }
 
 // change current connection for new connection

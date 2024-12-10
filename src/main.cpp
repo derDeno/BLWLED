@@ -32,11 +32,12 @@ void initState() {
 
     pref.begin("deviceSettings");
 
-    // check if boardname already set, else set it
-    uint64_t mac = ESP.getEfuseMac();  // Get the ESP32's MAC address from the eFuse
+    // set the board name (aka hostname) using 3 mac bytes
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
     char boardName[14];
-    
-    snprintf(boardName, sizeof(boardName), "BLWLED-%06X", (uint32_t)(mac & 0xFFFFFF));
+    snprintf(boardName, sizeof(boardName), "BLWLED-%02X%02X%02X", mac[3], mac[4], mac[5]);
+
     if (pref.getString("name", "").length() == 0) {
         pref.putString("name", boardName);
     }

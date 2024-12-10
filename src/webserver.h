@@ -355,14 +355,12 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // connect to mqtt and wait for incoming report message
-
-    try {
-      mqtt_connect();
-      request->send(200, "application/json", "{\"success\":\"true\"}");
-    } catch (const std::exception &e) {
-      request->send(200, "application/json", "{\"success\":\"false\"}");
-      return;
+    int result = mqtt_connect();
+    
+    if (result == 1) {
+      request->send(200, "application/json", "{\"status\":\"success\"}");
+    } else {
+      request->send(200, "application/json", "{\"status\":\"failed\"}");
     }
   });
 
