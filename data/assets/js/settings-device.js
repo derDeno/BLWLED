@@ -59,7 +59,7 @@ async function saveDeviceSettings() {
 
 			setTimeout(() => {
 				alertBox.style.display = "none";
-			}, 5000);
+			}, 3000);
 		} else {
 			console.error("Failed to save device settings");
 		}
@@ -104,8 +104,6 @@ document.getElementById("btn-reset").addEventListener("click", function () {
 });
 
 document.getElementById("btn-reset-modal").addEventListener("click", async function () {
-	console.log("Device reset confirmed");
-	// Add logic to reset device settings here
 
 	try {
 		const response = await fetch("/api/reset", {
@@ -116,6 +114,8 @@ document.getElementById("btn-reset-modal").addEventListener("click", async funct
 
 			const modal = bootstrap.Modal.getInstance(document.getElementById("modal-reset"));
 			modal.hide();
+
+			window.location.replace("/");
 			
 		} else {
 			console.error("Failed to save device settings");
