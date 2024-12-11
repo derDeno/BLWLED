@@ -81,9 +81,6 @@ void setup() {
     logger("=============================");
     logger("LittleFS mounted successfully");
 
-    logger("E:  test error");
-    logger("W:  test warning");
-
     // Initialize application state
     initState();
     setupWled();
@@ -116,6 +113,9 @@ void setup() {
     if (mqtt_setup()) {
         mqtt_reconnect();
     }
+
+    logger("E:  test error");
+    logger("W:  test warning");
 }
 
 void loop() {
