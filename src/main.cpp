@@ -113,9 +113,6 @@ void setup() {
     if (mqtt_setup()) {
         mqtt_reconnect();
     }
-
-    logger("E:  test error");
-    logger("W:  test warning");
 }
 
 void loop() {
