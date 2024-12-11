@@ -59,7 +59,7 @@ async function saveDeviceSettings() {
 
 			setTimeout(() => {
 				alertBox.style.display = "none";
-			}, 3000);
+			}, 5000);
 		} else {
 			console.error("Failed to save device settings");
 		}

@@ -36,7 +36,7 @@
                 <h4 class="card-title">WLED</h4>
                 <p class="card-text">Setup your wled led strip here</p>
                 <form id="form-wled">
-                    <div class="form-check" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="wled-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
+                    <div class="form-check form-switch form-check-inline" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="wled-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
                     <div class="wled-settings">
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">LED Count</span><input class="form-control" type="number" id="wled-count" value="0"></div>
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Color Order</span><select class="form-select" id="wled-order">
@@ -57,7 +57,7 @@
                 <h4 class="card-title">Analog LED</h4>
                 <p class="card-text">If you have an analog led strip connected, set it up here. You can also use this connector for other porpoise like a signal tower.</p>
                 <form id="form-analog">
-                    <div class="form-check" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="analog-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
+                    <div class="form-check form-switch form-check-inline" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="analog-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
                     <div class="analog-settings">
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Select Mode</span><select class="form-select" id="analog-mode">
                                 <option value="1" selected="">LED Strip</option>
@@ -73,7 +73,7 @@
                 <h4 class="card-title">Onboard Switch</h4>
                 <p class="card-text">Setup the onboard switch button. Event makes the switch available for mapping, while reboot reboots the BLWLED.</p>
                 <form id="form-switch">
-                    <div class="form-check" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="switch-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
+                    <div class="form-check form-switch form-check-inline" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="switch-activate" checked=""><label class="form-check-label" for="formCheck-1">Activate</label></div>
                     <div class="switch-settings">
                         <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Switch Function</span><select class="form-select" id="switch-action">
                                 <option value="1" selected="">Event</option>
@@ -88,7 +88,7 @@
             <div class="card-body">
                 <h4 class="card-title">Logging</h4>
                 <form id="form-debug-log">
-                    <div class="form-check" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="debug-log-activate" checked=""><label class="form-check-label" for="switch-activate-1">Debug logging</label></div>
+                    <div class="form-check form-switch form-check-inline" style="margin-bottom: 10px;"><input class="form-check-input" type="checkbox" id="debug-log-activate" checked=""><label class="form-check-label" for="switch-activate-1">Debug logging</label></div>
                 </form>
             </div>
         </div><!-- End: debug -->

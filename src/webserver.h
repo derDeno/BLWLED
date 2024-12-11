@@ -116,7 +116,6 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     JsonDocument doc;
     deserializeJson(doc, backupContent);
 
-
     // device settings
     JsonObject device = doc["device"];
     const char* name = device["name"];
@@ -277,7 +276,13 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     pref.begin("deviceSettings");
     
     if (request->hasParam("wled", true)) {
-      bool wled = request->getParam("wled", true)->value();
+      String val = request->getParam("wled", true)->value();
+
+      bool wled = false;
+      if (val == "true" || val == "1") {
+        wled = true;
+      }
+      
       pref.putBool("wled", wled);
     }
 
@@ -292,7 +297,13 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("analog", true)) {
-      bool analog = request->getParam("analog", true)->value();
+      String val = request->getParam("analog", true)->value();
+
+      bool analog = false;
+      if (val == "true" || val == "1") {
+        analog = true;
+      }
+      
       pref.putBool("analog", analog);
     }
 
@@ -302,7 +313,13 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("switch", true)) {
-      bool sw = request->getParam("switch", true)->value();
+      String val = request->getParam("switch", true)->value();
+      
+      bool sw = false;
+      if (val == "true" || val == "1") {
+        sw = true;
+      }
+      
       pref.putBool("sw", sw);
     }
 
@@ -312,18 +329,32 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("logging", true)) {
-      bool logging = request->getParam("logging", true)->value();
+      String val = request->getParam("logging", true)->value();
+      
+      bool logging = false;
+      if (val == "true" || val == "1") {
+        logging = true;
+      }
+
       pref.putBool("logging", logging);
+      Serial.println("Logging: " + String(logging));
 
       // if loggging is set to false delete the existing file
       if (!logging) {
         deleteLogFile();
       }
     }
+
     pref.end();
 
     request->send(200, "application/json", "{\"status\":\"saved\"}");
-    ESP.restart();
+    request->onDisconnect([]() {
+      delay(100);
+      ESP.restart();
+    });
+
+    //delay(2500);
+    //ESP.restart();
   });
 
   server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -341,6 +372,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
   server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
     pref.begin("printerSettings");
+    
     if (request->hasParam("ip", true)) {
       String printerIp = request->getParam("ip", true)->value();
       pref.putString("ip", printerIp);
@@ -357,18 +389,27 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("rtid", true)) {
-      bool returnToIdleDoor = request->getParam("rtid", true)->value();
-      pref.putBool("rtid", returnToIdleDoor);
+      String val = request->getParam("rtid", true)->value();
+
+      bool rtid = false;
+      if (val == "true" || val == "1") {
+        rtid = true;
+      }
+      pref.putBool("rtid", rtid);
     }
 
     if (request->hasParam("rtit", true)) {
       int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
       pref.putInt("rtit", returnToIdleTime);
     }
+    
     pref.end();
 
     request->send(200, "application/json", "{\"status\":\"saved\"}");
-    ESP.restart();
+    request->onDisconnect([]() {
+      delay(100);
+      ESP.restart();
+    });
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -399,7 +440,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
       ESP.restart();
 
     }else {
-      logger("\nFailed to connect to the new WiFi network. Keeping current connection.");
+      logger("W:  Failed to connect to the new WiFi network. Keeping current connection.");
       request->send(200, "application/json", "{\"status\":\"failed\"}");
     }
 
@@ -567,6 +608,19 @@ void setupFileRoutes(AsyncWebServer &server) {
 
 
 void setupApiRoutes(AsyncWebServer &server) {
+  server.on("/api/info", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    doc["mac"] = WiFi.macAddress();
+    doc["ip"] = WiFi.localIP().toString();
+    doc["hostname"] = WiFi.getHostname();
+    doc["rssi"] = WiFi.RSSI();
+    doc["version"] = appConfig.version;
+    doc["uptime"] = millis();
+    serializeJson(doc, *response);
+    request->send(response);
+  });
+
   server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (LittleFS.exists("/log.txt")) {
       request->send(LittleFS, "/log.txt", "text/plain", true);
@@ -575,27 +629,33 @@ void setupApiRoutes(AsyncWebServer &server) {
     }
   });
 
-  server.on("/api/log-delete", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/log-delete", HTTP_POST, [](AsyncWebServerRequest *request) {
     deleteLogFile();
     request->redirect("/log");
   });
 
   server.on("/api/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
-    logger("Reset by user");
+    logger("W:  Factory reset by user requested");
 
     nvs_flash_erase();
     nvs_flash_init();
 
     request->redirect("/");
-    delay(800);
-    ESP.restart();
+
+    request->onDisconnect([]() {
+      delay(100);
+      ESP.restart();
+    });
   });
 
-  server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
-    logger("Reboot by user");
-    request->redirect("/");
-    delay(800);
-    ESP.restart();
+  server.on("/api/reboot", HTTP_POST, [](AsyncWebServerRequest *request) {
+    logger("W:  Reboot by user requested");
+    request->send(200, "application/json", "{\"status\":\"rebooting\"}");
+
+    request->onDisconnect([]() {
+      delay(100);
+      ESP.restart();
+    });
   });
 
   server.on("/api/color", HTTP_POST, [](AsyncWebServerRequest *request) {
