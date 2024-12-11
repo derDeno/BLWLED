@@ -65,7 +65,12 @@
                     <h4 class="modal-title">Test Printer Connection</h4>
                 </div>
                 <div class="modal-body">
-                    <p id="modal-test-connection-testing" style="margin-bottom: 10px;">Testing Connection...</p>
+                    <div class="row align-items-center" id="modal-test-connection-testing" style="margin-bottom: 10px;">
+                        <div class="col-xxl-1"><span class="spinner-border text-start" role="status" style="color: var(--bs-primary);"></span></div>
+                        <div class="col">
+                            <p>Testing MQTT connection...</p>
+                        </div>
+                    </div>
                     <p class="text-success" id="modal-test-connection-success" style="margin-bottom: 10px;"><strong>Connected!</strong></p>
                     <p class="text-danger" id="modal-test-connection-fail" style="margin-bottom: 10px;"><strong>Connection failed!</strong></p>
                 </div>

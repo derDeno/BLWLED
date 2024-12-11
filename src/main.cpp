@@ -1,19 +1,20 @@
 #include <Arduino.h>
+#include <ESPAsyncWebServer.h>
+#include <FastLED.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
-#include <ESPAsyncWebServer.h>
-#include <Preferences.h>
 #include <time.h>
-#include <FastLED.h>
 
 #include "config.h"
 #include "log.h"
 #include "wifi-manager.h"
 #include "led-manager.h"
+#include "mqtt-manager.h"
 #include "action.h"
 #include "events.h"
-#include "mqtt-manager.h"
 #include "webserver.h"
+
 
 AppConfig appConfig;
 AsyncWebServer server(80);
@@ -29,7 +30,6 @@ unsigned const long debounceDelay = 1000;
 unsigned int wifireconnect = 0;
 
 void initState() {
-
     pref.begin("deviceSettings");
 
     // set the board name (aka hostname) using 3 mac bytes
@@ -61,17 +61,16 @@ void initState() {
     appConfig.rtit = pref.getInt("rtit", PREF_RTIT);
     pref.end();
 
-    
     pref.begin("wifi", true);
     appConfig.wifiSet = pref.getBool("set", true);
     strcpy(appConfig.ssid, pref.getString("ssid", PREF_SSID).c_str());
     strcpy(appConfig.pass, pref.getString("pass", PREF_PASS).c_str());
     pref.end();
-    
+
+    appConfig.printerSet = (strlen(appConfig.ip) > 0 && strlen(appConfig.ac) > 0 && strlen(appConfig.sn) > 0) ? true : false;
 }
 
 void setup() {
-
     Serial.begin(74880);
 
     // Initialize LittleFS
@@ -81,6 +80,9 @@ void setup() {
     }
     logger("=============================");
     logger("LittleFS mounted successfully");
+
+    logger("E:  test error");
+    logger("W:  test warning");
 
     // Initialize application state
     initState();
@@ -109,10 +111,14 @@ void setup() {
     logger(String(appConfig.name) + " is ready!");
 
     startupAnimation();
+
+    // start mqtt
+    if (mqtt_setup()) {
+        mqtt_reconnect();
+    }
 }
 
 void loop() {
-
     // react to switch press
     int reading = digitalRead(5);
     if (reading != lastSwState) {
@@ -128,20 +134,22 @@ void loop() {
     }
     lastSwState = reading;
 
-
     // capture wifi disconnect
-    if(WiFi.status() != WL_CONNECTED) {
-        logger("Lost WiFi connection");
+    if (WiFi.status() != WL_CONNECTED) {
+        logger("W:  Lost WiFi connection");
         logger("Retrying to connect to " + String(appConfig.ssid));
 
         wifireconnect += 1;
 
-        if(wifireconnect < 10) {
+        if (wifireconnect < 10) {
             WiFi.disconnect();
             delay(100);
             WiFi.reconnect();
-        }else {
+        } else {
             // 10 reconnection attempts failed, try other methods
         }
     }
+
+    // capture mqtt messages
+    mqttClient.loop();
 }

@@ -9,6 +9,7 @@ extern AppConfig appConfig;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
 
+
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
     return WiFi.macAddress();
@@ -52,12 +53,12 @@ String processorInfo(const String &var) {
   return String();
 }
 
+
 String processorLogs(const String &var) {
   if (var == "LOG_TEMPLATE") {
+
     // check if logging is even active
-    pref.begin("deviceSettings");
-    bool logging = pref.getBool("logging", true);
-    pref.end();
+    bool logging = appConfig.logging;
 
     if (!logging) {
       return "Logging is disabled!";
@@ -67,7 +68,17 @@ String processorLogs(const String &var) {
     String logContent = "";
     if (logFile) {
       while (logFile.available()) {
-        logContent += logFile.readStringUntil('\n') + "<br>";
+
+        String temp = logFile.readStringUntil('\n');
+
+        // check if string begins with E: or W: and colorize it
+        if (temp.startsWith("E:")) {
+          logContent += "<span class='text-danger'>" + temp + "</span><br>";
+        } else if (temp.startsWith("W:")) {
+          logContent += "<span class='text-warning'>" + temp + "</span><br>";
+        } else {
+          logContent += temp + "<br>";
+        }
       }
       logFile.close();
     } else {
@@ -164,6 +175,7 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     ESP.restart();
   }
 }
+
 
 void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
@@ -302,6 +314,11 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     if (request->hasParam("logging", true)) {
       bool logging = request->getParam("logging", true)->value();
       pref.putBool("logging", logging);
+
+      // if loggging is set to false delete the existing file
+      if (!logging) {
+        deleteLogFile();
+      }
     }
     pref.end();
 
@@ -355,10 +372,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    mqtt_setup();
-    int result = mqtt_connect();
-
-    Serial.println(result);
+    int result = mqtt_reconnect();
     
     if (result == 1) {
       request->send(200, "application/json", "{\"status\":\"success\"}");
@@ -562,7 +576,7 @@ void setupApiRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/log-delete", HTTP_GET, [](AsyncWebServerRequest *request) {
-    LittleFS.remove("/log.txt");
+    deleteLogFile();
     request->redirect("/log");
   });
 

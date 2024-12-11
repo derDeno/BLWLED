@@ -32,7 +32,7 @@
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version("0.1.0-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false) {
+    AppConfig() : version("0.1.0-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false), printerSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -56,6 +56,7 @@ struct AppConfig {
     bool logging;       // logging active
 
     // printer states
+    bool printerSet;    // Was printer already set up
     char ip[16];        // printer ip
     char ac[16];        // access code
     char sn[16];        // serial number
@@ -63,7 +64,7 @@ struct AppConfig {
     uint8_t rtit;       // return to idle time in seconds
 
     // WiFi settings
-    bool wifiSet;      // Was WiFi already set up
+    bool wifiSet;       // Was WiFi already set up
     char ssid[33];      // WiFi ssid
     char pass[64];      // WiFi password
 };

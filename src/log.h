@@ -76,3 +76,9 @@ void logger(String logData) {
   logFile.println(logMessage);
   logFile.close();
 }
+
+void deleteLogFile() {
+  if (LittleFS.exists("/log.txt")) {
+    LittleFS.remove("/log.txt");
+  }
+}

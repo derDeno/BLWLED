@@ -10,16 +10,22 @@ String topic = String("device/") + appConfig.sn + String("/report");
 
 
 void mqtt_listen(char* topic, byte* payload, unsigned int length) {
-    Serial.println(topic);
+    logger(topic);
 }
 
 
 void mqtt_parse() {}
 
 
-int mqtt_connect() {
+int mqtt_reconnect() {
+    // check if wifi is connected
     if (WiFi.status() != WL_CONNECTED) {
         return 0;
+    }
+
+    // if mqtt connected, disconnect first
+    if(mqttClient.connected()) {
+        mqttClient.disconnect();
     }
 
     int retries = 0;
@@ -31,25 +37,22 @@ int mqtt_connect() {
             return 1;
 
         } else {
-            logger("MQTT failed with state " + String(mqttClient.state()));
+            logger("E:  MQTT failed with state " + String(mqttClient.state()));
             delay(2000);
             retries++;
         }
     }
 
-    logger("Failed to connect to MQTT after 5 retries");
+    logger("E:  Failed to connect to MQTT after 5 retries");
     return 0;
 }
 
 
-void mqtt_setup() {
-    // if connected, disconnect first
-    if(mqttClient.connected()) {
-        mqttClient.disconnect();
-    }
+bool mqtt_setup() {
 
-    if (strlen(appConfig.ip) == 0 || strlen(appConfig.ac) == 0 || strlen(appConfig.sn) == 0) {
-        logger("Printer settings not configured");
+    if (!appConfig.printerSet) {
+        logger("E:  Printer not configured!");
+        return false;
     }
 
     wifiClient.setInsecure();
@@ -59,4 +62,6 @@ void mqtt_setup() {
     mqttClient.setServer(appConfig.ip, 8883);
     mqttClient.setCallback(mqtt_listen);
     mqttClient.setSocketTimeout(20);
+
+    return true;
 }

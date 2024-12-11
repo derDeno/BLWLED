@@ -26,13 +26,6 @@ typedef enum {
 void eventMaintenance() {
     if (!maintenanceToggle) {
         if (appConfig.wled) {
-
-            /*
-            CRGB tempLeds[appConfig.count];
-            leds = tempLeds;
-            FastLED[0].setLeds(tempLeds, appConfig.count);
-            */
-
             actionColorWled("#ffffff", 125);
 
         } else if (appConfig.analog) {

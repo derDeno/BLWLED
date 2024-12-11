@@ -27,9 +27,6 @@ void setupWled() {
     }
 }
 
-void clearWled() {
-
-}
 
 void startupAnimation() {
     logger("Startup Animation");

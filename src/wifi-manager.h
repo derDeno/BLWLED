@@ -19,7 +19,7 @@ void setupMDNS() {
             logger("Hostname set to http://" + hostname +".local");
             
         } else {
-            logger("Failed to start mDNS with fallback hostname!");
+            logger("E:  Failed to start mDNS with fallback hostname!");
         }
     }
 }
