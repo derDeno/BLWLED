@@ -58,6 +58,10 @@ async function savePrinterSettings() {
 }
 
 async function showTestConnectionModal() {
+    document.getElementById('modal-test-connection-testing').style.display = 'block';
+    document.getElementById('modal-test-connection-success').style.display = 'none';
+    document.getElementById('modal-test-connection-fail').style.display = 'none';
+
     const testConnectionModal = new bootstrap.Modal(document.getElementById('modal-test-connection'));
     testConnectionModal.show();
 
@@ -69,7 +73,7 @@ async function showTestConnectionModal() {
 
             document.getElementById('modal-test-connection-testing').style.display = 'none';
 
-            if (res.success) {
+            if (res.status === 'success') {
                 document.getElementById('modal-test-connection-success').style.display = 'block';
                 document.getElementById('modal-test-connection-fail').style.display = 'none';
             } else {
