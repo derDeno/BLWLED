@@ -72,9 +72,9 @@ String processorLogs(const String &var) {
         String temp = logFile.readStringUntil('\n');
 
         // check if string begins with E: or W: and colorize it
-        if (temp.startsWith("E:")) {
+        if (temp.indexOf("E: ") != -1) {
           logContent += "<span class='text-danger'>" + temp + "</span><br>";
-        } else if (temp.startsWith("W:")) {
+        } else if (temp.indexOf("W:") != -1) {
           logContent += "<span class='text-warning'>" + temp + "</span><br>";
         } else {
           logContent += temp + "<br>";
