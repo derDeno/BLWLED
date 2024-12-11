@@ -368,6 +368,60 @@ document.addEventListener("DOMContentLoaded", function () {
 		resetModalForm();
 	});
 
+	// Check for update
+	document.getElementById("alert-update").style.display = "none";
+
+	async function checkForUpdates() {
+		const currentVersion = "0.1.0-alpha";
+		const url = `https://api.github.com/repos/derDeno/BLWLED/releases/latest`;
+
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				console.log(`GitHub API returned an error: ${response.status}`);
+			}
+
+			const releaseData = await response.json();
+			const latestVersion = releaseData.tag_name.replace(/^v/, ""); // Remove "v" if present
+
+			if (isNewerVersion(latestVersion, currentVersion)) {
+				console.log(`A newer version is available: ${latestVersion}`);
+				document.getElementById("alert-update").style.display = "block";
+			}
+		} catch (error) {
+			console.error(`Error checking for updates: ${error.message}`);
+		}
+	}
+
+	function isNewerVersion(latest, current) {
+		const parseVersion = (version) => {
+			const [main, pre] = version.split("-");
+			const parts = main.split(".").map(Number);
+			return { parts, pre: pre || "" };
+		};
+
+		const comparePreRelease = (pre1, pre2) => {
+			if (!pre1 && !pre2) return 0; // Both are stable versions
+			if (!pre1) return 1; // Current is stable, latest has pre-release
+			if (!pre2) return -1; // Current has pre-release, latest is stable
+			return pre1.localeCompare(pre2); // Compare pre-release identifiers lexically
+		};
+
+		const latestParsed = parseVersion(latest);
+		const currentParsed = parseVersion(current);
+
+		for (let i = 0; i < Math.max(latestParsed.parts.length, currentParsed.parts.length); i++) {
+			const latestPart = latestParsed.parts[i] || 0;
+			const currentPart = currentParsed.parts[i] || 0;
+			if (latestPart > currentPart) return true;
+			if (latestPart < currentPart) return false;
+		}
+
+		// If main parts are equal, compare pre-release identifiers
+		return comparePreRelease(latestParsed.pre, currentParsed.pre) > 0;
+	}
+
 	updateNoMappingText();
 	updateFormBasedOnSettings();
+	checkForUpdates();
 });

@@ -1,21 +1,14 @@
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
-
 #include <ArduinoJson.h>
-#include <Preferences.h>
-#include <WiFi.h>
 #include <Update.h>
-#include <WiFiMulti.h>
 #include <nvs_flash.h>
 
-#include "log.h"
+extern AsyncEventSource events;
+extern Preferences pref;
+extern AppConfig appConfig;
 
-AsyncEventSource events("/events");
-
-Preferences pref;
 uint8_t otaDone = 0;
 size_t totalSize = 0;
-const char *version = "0.0.2-T3";
+
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -31,7 +24,7 @@ String processorInfo(const String &var) {
     return String(WiFi.RSSI());
 
   } else if (var == "TEMPLATE_VERSION") {
-    return F(version);
+    return F(appConfig.version);
 
   } else if (var == "TEMPLATE_UPTIME") {
     unsigned long uptimeMillis = millis();
@@ -60,12 +53,12 @@ String processorInfo(const String &var) {
   return String();
 }
 
+
 String processorLogs(const String &var) {
   if (var == "LOG_TEMPLATE") {
+
     // check if logging is even active
-    pref.begin("deviceSettings");
-    bool logging = pref.getBool("logging", true);
-    pref.end();
+    bool logging = appConfig.logging;
 
     if (!logging) {
       return "Logging is disabled!";
@@ -75,7 +68,17 @@ String processorLogs(const String &var) {
     String logContent = "";
     if (logFile) {
       while (logFile.available()) {
-        logContent += logFile.readStringUntil('\n') + "<br>";
+
+        String temp = logFile.readStringUntil('\n');
+
+        // check if string begins with E: or W: and colorize it
+        if (temp.indexOf("E: ") != -1) {
+          logContent += "<span class='text-danger'>" + temp + "</span><br>";
+        } else if (temp.indexOf("W:") != -1) {
+          logContent += "<span class='text-warning'>" + temp + "</span><br>";
+        } else {
+          logContent += temp + "<br>";
+        }
       }
       logFile.close();
     } else {
@@ -87,6 +90,7 @@ String processorLogs(const String &var) {
   // Return an empty string if the placeholder is unknown
   return String();
 }
+
 
 void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
@@ -112,35 +116,39 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     JsonDocument doc;
     deserializeJson(doc, backupContent);
 
+
     // device settings
     JsonObject device = doc["device"];
-    bool wled = device["wled"];
-    int count = device["count"];
-    const char *order = device["order"];
-    bool analog = device["analog"];
-    const char *mode = device["mode"];
-    bool sw = device["switch"];
-    const char *fnct = device["function"];
-    bool logging = device["logging"];
+    const char* name = device["name"];
+    const bool wled = device["wled"];
+    const uint8_t count = device["count"];
+    const char* order = device["order"];
+    const bool analog = device["analog"];
+    const uint8_t mode = device["mode"];
+    const bool sw = device["switch"];
+    const uint8_t action = device["action"];
+    const bool logging = device["logging"];
 
     pref.begin("deviceSettings");
+    pref.putString("name", name);
     pref.putBool("wled", wled);
     pref.putInt("count", count);
     pref.putString("order", order);
     pref.putBool("analog", analog);
-    pref.putString("mode", mode);
+    pref.putInt("mode", mode);
     pref.putBool("sw", sw);
-    pref.putString("function", fnct);
+    pref.putInt("action", action);
     pref.putBool("logging", logging);
     pref.end();
 
+    
     // printer settings
     JsonObject printer = doc["printer"];
-    const char *ip = printer["ip"];
-    const char *ac = printer["ac"];
-    const char *sn = printer["sn"];
-    bool rtid = printer["rtid"];
-    int rtit = printer["rtit"];
+    const char* ip = printer["ip"];
+    const char* ac = printer["ac"];
+    const char* sn = printer["sn"];
+    const bool rtid = printer["rtid"];
+    const uint8_t rtit = printer["rtit"];
 
     pref.begin("printerSettings");
     pref.putString("ip", ip);
@@ -168,8 +176,8 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
   }
 }
 
+
 void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-  logger("In handler", false);
   if (!index) {
     logger("Update Start: " + filename);
     if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
@@ -242,41 +250,32 @@ void setupStaticRoutes(AsyncWebServer &server) {
   server.on("/settings-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/settings-wifi.html", String(), false);
   });
+
+  server.on("/settings-test", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/settings-test.html", String(), false);
+  });
 }
 
 
 void setupSettingsRoutes(AsyncWebServer &server) {
   server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
-    pref.begin("deviceSettings");
-    bool wled = pref.getBool("wled", false);
-    int count = pref.getInt("count", 0);
-    String order = pref.getString("order", "gbr");
-
-    bool analog = pref.getBool("analog", false);
-    String mode = pref.getString("mode", "strip");
-
-    bool sw = pref.getBool("sw", false);
-    String fnct = pref.getString("function", "event");
-
-    bool logging = pref.getBool("logging", true);
-    pref.end();
-
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    doc["wled"] = wled;
-    doc["count"] = count;
-    doc["order"] = order;
-    doc["analog"] = analog;
-    doc["mode"] = mode;
-    doc["switch"] = sw;
-    doc["function"] = fnct;
-    doc["logging"] = logging;
+    doc["wled"] = appConfig.wled;
+    doc["count"] = appConfig.count;
+    doc["order"] = appConfig.order;
+    doc["analog"] = appConfig.analog;
+    doc["mode"] = appConfig.mode;
+    doc["switch"] = appConfig.sw;
+    doc["action"] = appConfig.action;
+    doc["logging"] = appConfig.logging;
     serializeJson(doc, *response);
     request->send(response);
   });
 
   server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
     pref.begin("deviceSettings");
+    
     if (request->hasParam("wled", true)) {
       bool wled = request->getParam("wled", true)->value();
       pref.putBool("wled", wled);
@@ -298,8 +297,8 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
 
     if (request->hasParam("mode", true)) {
-      String mode = request->getParam("mode", true)->value();
-      pref.putString("mode", mode);
+      int mode = request->getParam("mode", true)->value().toInt();
+      pref.putInt("mode", mode);
     }
 
     if (request->hasParam("switch", true)) {
@@ -307,37 +306,34 @@ void setupSettingsRoutes(AsyncWebServer &server) {
       pref.putBool("sw", sw);
     }
 
-    if (request->hasParam("function", true)) {
-      String fnct = request->getParam("function", true)->value();
-      pref.putString("function", fnct);
+    if (request->hasParam("action", true)) {
+      int action = request->getParam("action", true)->value().toInt();
+      pref.putInt("action", action);
     }
 
     if (request->hasParam("logging", true)) {
       bool logging = request->getParam("logging", true)->value();
       pref.putBool("logging", logging);
-    }
 
+      // if loggging is set to false delete the existing file
+      if (!logging) {
+        deleteLogFile();
+      }
+    }
     pref.end();
+
     request->send(200, "application/json", "{\"status\":\"saved\"}");
+    ESP.restart();
   });
 
   server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    bool returnToIdleDoor = pref.getBool("rtid", true);
-    int returnToIdleTime = pref.getInt("rtit", 10);
-    pref.end();
-
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
-    doc["printerIp"] = printerIp;
-    doc["accessCode"] = accessCode;
-    doc["sn"] = sn;
-    doc["rtid"] = returnToIdleDoor;
-    doc["rtit"] = returnToIdleTime;
-    doc["test"] = ESP.getFreeHeap();
+    doc["printerIp"] = appConfig.ip;
+    doc["accessCode"] = appConfig.ac;
+    doc["sn"] = appConfig.sn;
+    doc["rtid"] = appConfig.rtid;
+    doc["rtit"] = appConfig.rtit;
 
     serializeJson(doc, *response);
     request->send(response);
@@ -369,64 +365,45 @@ void setupSettingsRoutes(AsyncWebServer &server) {
       int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
       pref.putInt("rtit", returnToIdleTime);
     }
-
     pref.end();
+
     request->send(200, "application/json", "{\"status\":\"saved\"}");
+    ESP.restart();
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // check printer mqtt for info msg
-
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    pref.end();
-
-    request->send(200, "application/json", "{\"status\":\"success\"}");
+    int result = mqtt_reconnect();
+    
+    if (result == 1) {
+      request->send(200, "application/json", "{\"status\":\"success\"}");
+    } else {
+      request->send(200, "application/json", "{\"status\":\"failed\"}");
+    }
   });
 
   server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String ssidNew;
-    String pwNew;
+    String newSSID;
+    String newPw;
 
     if (request->hasParam("ssid", true)) {
-      ssidNew = request->getParam("ssid", true)->value();
+      newSSID = request->getParam("ssid", true)->value();
     }
 
     if (request->hasParam("pw", true)) {
-      pwNew = request->getParam("pw", true)->value();
+      newPw = request->getParam("pw", true)->value();
     }
 
-    WiFiMulti wifiMulti;
-    wifiMulti.addAP(ssidNew.c_str(), pwNew.c_str());
-    unsigned long startTime = millis();
-    unsigned long timeout = 10000;
-
-    // test new connection
-    logger("Testing new WiFi connection");
-    while (wifiMulti.run() != WL_CONNECTED && millis() - startTime < timeout) {
-      delay(500);
-      Serial.print(".");
-    }
-
-    if (wifiMulti.run() == WL_CONNECTED) {
-      logger("\nSuccessfully connected to the new WiFi network!");
-      logger("New IP Address: " + WiFi.localIP().toString());
-
-      pref.begin("wifi");
-      pref.putString("ssid", ssidNew);
-      pref.putString("pw", pwNew);
-      pref.end();
-
+    if( changeWifi(newSSID, newPw) == 1) {
       request->send(200, "application/json", "{\"status\":\"success\"}");
       delay(2000);
       ESP.restart();
 
-    } else {
+    }else {
       logger("\nFailed to connect to the new WiFi network. Keeping current connection.");
       request->send(200, "application/json", "{\"status\":\"failed\"}");
     }
+
+    
   });
 
   server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -456,10 +433,48 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 }
 
-
+ 
 void setupMappingRoutes(AsyncWebServer &server) {
   server.on("/api/mappings", HTTP_GET, [](AsyncWebServerRequest *request) {
+    pref.begin("mappings");
 
+    nvs_iterator_t it = nvs_entry_find(NULL, "mappings", NVS_TYPE_ANY);
+    if (it == NULL) {
+      Serial.println("No entries found");
+      request->send(404, "application/json", "{\"status\":\"no mappings found!\"}");
+      return;
+    }
+
+    const size_t maxKeys = 256;
+    String keysArray[maxKeys];
+    size_t keyCount = 0;
+
+    while (it != NULL && keyCount < maxKeys) {
+      nvs_entry_info_t info;
+      nvs_entry_info(it, &info);
+      it = nvs_entry_next(it);
+
+      keysArray[keyCount] = String(info.key);
+      Serial.println("Found key: " + keysArray[keyCount]);
+      keyCount++;
+    }
+
+    nvs_release_iterator(it);
+
+    // iterate over keys and get values
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument doc;
+    JsonArray mappings = doc["mappings"].to<JsonArray>();
+
+    for (size_t i = 0; i < keyCount; i++) {
+      JsonObject mapping = mappings.add<JsonObject>();
+      mapping["id"] = keysArray[i];
+      mapping["value"] = pref.getString(keysArray[i].c_str(), "");
+    }
+
+    pref.end();
+    serializeJson(doc, *response);
+    request->send(response);
   });
 
   server.on("/api/mappings", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -469,20 +484,34 @@ void setupMappingRoutes(AsyncWebServer &server) {
   server.on("/api/mappings", HTTP_DELETE, [](AsyncWebServerRequest *request) {
     if (request->hasParam("id")) {
       int id = request->getParam("id")->value().toInt();
+
+      pref.begin("mappings");
+      pref.remove(String(id).c_str());
+      pref.end();
+
+      request->send(200, "application/json", "{\"status\":\"deleted\"}");
     }
   });
 
-  server.on("/api/mapping-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/mappings-upload", HTTP_POST, [](AsyncWebServerRequest *request) {
 
   });
 
-  server.on("/api/mapping-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/mappings-download", HTTP_GET, [](AsyncWebServerRequest *request) {
 
   });
 
   server.on("/api/test-mapping", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (request->hasParam("id")) {
       int id = request->getParam("id")->value().toInt();
+
+      pref.begin("mappings");
+      String value = pref.getString(String(id).c_str(), "");
+      pref.end();
+
+      // fire the action part of the mapping
+
+      request->send(200, "application/json", "{\"status\":\"success\",\"value\":\"" + value + "\"}");
     }
   });
 }
@@ -490,32 +519,8 @@ void setupMappingRoutes(AsyncWebServer &server) {
 
 void setupFileRoutes(AsyncWebServer &server) {
   server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // device settings
-    pref.begin("deviceSettings");
-    bool wled = pref.getBool("wled", false);
-    int count = pref.getInt("count", 0);
-    String order = pref.getString("order", "gbr");
-
-    bool analog = pref.getBool("analog", false);
-    String mode = pref.getString("mode", "strip");
-
-    bool sw = pref.getBool("sw", false);
-    String fnct = pref.getString("function", "event");
-
-    bool logging = pref.getBool("logging", true);
-    pref.end();
-
-    // printer settings
-    pref.begin("printerSettings");
-    String printerIp = pref.getString("ip", "");
-    String accessCode = pref.getString("ac", "");
-    String sn = pref.getString("sn", "");
-    bool returnToIdleDoor = pref.getBool("rtid", true);
-    int returnToIdleTime = pref.getInt("rtit", 10);
-    pref.end();
-
     // wifi settings
-    pref.begin("wifi");
+    pref.begin("wifi", true);
     bool setup = pref.getBool("setup", false);
     String ssid = pref.getString("ssid", "");
     String pw = pref.getString("pw", "");
@@ -525,21 +530,21 @@ void setupFileRoutes(AsyncWebServer &server) {
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
     JsonObject device = doc["device"].to<JsonObject>();
-    device["wled"] = wled;
-    device["count"] = count;
-    device["order"] = order;
-    device["analog"] = analog;
-    device["mode"] = mode;
-    device["switch"] = sw;
-    device["function"] = fnct;
-    device["logging"] = logging;
+    device["wled"] = appConfig.wled;
+    device["count"] = appConfig.count;
+    device["order"] = appConfig.order;
+    device["analog"] = appConfig.analog;
+    device["mode"] = appConfig.mode;
+    device["switch"] = appConfig.sw;
+    device["action"] = appConfig.action;
+    device["logging"] = appConfig.logging;
 
     JsonObject printer = doc["printer"].to<JsonObject>();
-    printer["ip"] = printerIp;
-    printer["ac"] = accessCode;
-    printer["sn"] = sn;
-    printer["rtid"] = returnToIdleDoor;
-    printer["rtit"] = returnToIdleTime;
+    printer["ip"] = appConfig.ip;
+    printer["ac"] = appConfig.ac;
+    printer["sn"] = appConfig.sn;
+    printer["rtid"] = appConfig.rtid;
+    printer["rtit"] = appConfig.rtit;
 
     JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;
@@ -551,7 +556,9 @@ void setupFileRoutes(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { request->send(200); }, handleUploadRestore);
+  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
+    request->send(200); 
+  }, handleUploadRestore);
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
     request->send(200);
@@ -560,7 +567,7 @@ void setupFileRoutes(AsyncWebServer &server) {
 
 
 void setupApiRoutes(AsyncWebServer &server) {
-   server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/log-download", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (LittleFS.exists("/log.txt")) {
       request->send(LittleFS, "/log.txt", "text/plain", true);
     } else {
@@ -568,22 +575,67 @@ void setupApiRoutes(AsyncWebServer &server) {
     }
   });
 
-  server.on("/api/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/log-delete", HTTP_GET, [](AsyncWebServerRequest *request) {
+    deleteLogFile();
+    request->redirect("/log");
+  });
+
+  server.on("/api/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     logger("Reset by user");
 
     nvs_flash_erase();
     nvs_flash_init();
 
     request->redirect("/");
-    delay(100);
+    delay(800);
     ESP.restart();
   });
 
   server.on("/api/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
     logger("Reboot by user");
     request->redirect("/");
-    delay(100);
+    delay(800);
     ESP.restart();
+  });
+
+  server.on("/api/color", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String color = "#FF0000";
+    int output = -1;
+    int brightness = 255;
+    bool turnoff = false;
+
+    if (request->hasParam("color", true)) {
+      color = request->getParam("color", true)->value();
+    }
+
+    if (request->hasParam("output", true)) {
+      output = request->getParam("output", true)->value().toInt();
+    }
+
+    if (request->hasParam("brightness", true)) {
+      brightness = request->getParam("brightness", true)->value().toInt();
+    }
+
+    if (request->hasParam("turnoff", true)) {
+      turnoff = true;
+    }
+
+    if(turnoff == true) {
+      if(output == 1) {
+        FastLED.clear(true);
+      }else {
+        actionColorOff("analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw");
+      }
+
+    }else {
+      if(output == 1) {
+        actionColorWled(color.c_str(), brightness);
+      }else if(output == 2) {
+        actionColor(color.c_str(), "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", brightness);
+      }
+    }
+
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
   });
 }
 
@@ -606,5 +658,3 @@ void routing(AsyncWebServer &server) {
 
   server.onNotFound(notFound);
 }
-
-#endif

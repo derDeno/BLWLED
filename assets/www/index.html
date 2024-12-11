@@ -12,7 +12,7 @@
 <body style="background: rgb(214,214,214);">
     <!-- Start: Navbar Right Links (Dark) -->
     <nav class="navbar navbar-expand-md bg-dark py-3" data-bs-theme="dark">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-5">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link active" href="/">Mapping</a></li>
@@ -24,6 +24,11 @@
         </div>
     </nav><!-- End: Navbar Right Links (Dark) -->
     <div class="container" style="margin-top: 20px;margin-bottom: 20px;">
+        <div class="row" id="alert-update">
+            <div class="col">
+                <div class="alert alert-warning" role="alert"><span><strong>Update available!&nbsp; </strong>New Firmware version is available.&nbsp;</span><a class="alert-link" href="https://github.com/derDeno/BLWLED/releases" target="_blank"><span style="font-weight: normal !important;">Check here</span></a></div>
+            </div>
+        </div>
         <div class="row text-end" style="margin-bottom: 10px;">
             <div class="col"><button class="btn btn-primary" id="btn-add-mapping" type="button">Add Mapping</button></div>
         </div>
@@ -100,6 +105,7 @@
                             <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Pin Control&nbsp; &nbsp; &nbsp;</span><select class="form-select" id="mapping-action-pin-control">
                                     <option value="on" selected="">On</option>
                                     <option value="off">Off</option>
+                                    <option value="flash">Flash</option>
                                 </select></div>
                             <div class="input-group" style="margin-bottom: 10px;"><span class="input-group-text">Invert After x s</span><select class="form-select" id="mapping-action-pin-invert">
                                     <option value="true">Yes</option>

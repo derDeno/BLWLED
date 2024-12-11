@@ -13,7 +13,7 @@
 <body style="background: rgb(214,214,214);">
     <!-- Start: Navbar Right Links (Dark) -->
     <nav class="navbar navbar-expand-md bg-dark py-3" data-bs-theme="dark">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><img class="logo" style="width: 32px;height: 32px;margin-right: 8px;" src="assets/img/icon.svg"><span>BLWLED</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-5"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-5">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Mapping</a></li>
@@ -34,8 +34,8 @@
             <div class="card-body">
                 <h4 class="card-title">Firmware Update</h4>
                 <p class="card-text">Upload an OTA update <em>.bin</em> file</p>
-                <form id="form-ota" action="/api/ota-upload" method="post">
-                    <div class="input-group"><input class="form-control" type="file" id="ota-selector" accept=".bin" name="upload-ota"><button class="btn btn-primary" id="ota-upload" type="submit">Update</button></div>
+                <form id="form-ota">
+                    <div class="input-group"><input class="form-control" type="file" id="ota-selector" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload" type="button">Update</button></div>
                 </form>
             </div>
         </div><!-- End: ota -->
@@ -65,7 +65,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Installing OTA Update. This may take up to 2 minutes.</p>
-                    <p id="ota-progress-txt">%OTA_PROGRESS%</p>
+                    <p id="ota-progress-txt"></p>
                     <div class="progress" id="ota-progress-bar">
                         <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">0%</div>
                     </div>

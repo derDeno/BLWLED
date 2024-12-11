@@ -57,9 +57,35 @@ async function savePrinterSettings() {
     }
 }
 
-function showTestConnectionModal() {
+async function showTestConnectionModal() {
+    document.getElementById('modal-test-connection-testing').style.display = 'block';
+    document.getElementById('modal-test-connection-success').style.display = 'none';
+    document.getElementById('modal-test-connection-fail').style.display = 'none';
+
     const testConnectionModal = new bootstrap.Modal(document.getElementById('modal-test-connection'));
     testConnectionModal.show();
+
+    // run connection test
+    try {
+        const response = await fetch('/api/test-printer');
+        if (response.ok) {
+            const res = await response.json();
+
+            document.getElementById('modal-test-connection-testing').style.display = 'none';
+
+            if (res.status === 'success') {
+                document.getElementById('modal-test-connection-success').style.display = 'block';
+                document.getElementById('modal-test-connection-fail').style.display = 'none';
+            } else {
+                document.getElementById('modal-test-connection-success').style.display = 'none';
+                document.getElementById('modal-test-connection-fail').style.display = 'block';
+            }
+        } else {
+            console.error('Failed to connect to printer');
+        }
+    } catch (error) {
+        console.error('Error calling API:', error);
+    }
 }
 
 document.getElementById('btn-modal-test-connection-close').addEventListener('click', function () {
@@ -79,4 +105,6 @@ document.getElementById('btn-connection-test').addEventListener('click', functio
 window.onload = function () {
     loadPrinterSettings();
     document.getElementById('alert-saved-printer-settings').style.display = 'none';
+    document.getElementById('modal-test-connection-success').style.display = 'none';
+    document.getElementById('modal-test-connection-fail').style.display = 'none';
 };

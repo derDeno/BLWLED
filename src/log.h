@@ -1,11 +1,9 @@
-#ifndef LOG_H
-#define LOG_H
-
 #include <Arduino.h>
 #include <LittleFS.h>
 
 struct tm timeinfo;
 const size_t MAX_LOG_FILE_SIZE = 200 * 1024;  // 200 KB
+extern AppConfig appConfig;
 
 void checkLogFileSize(const char* fileName) {
   File logFile = LittleFS.open(fileName, "r");
@@ -51,7 +49,7 @@ void checkLogFileSize(const char* fileName) {
   }
 }
 
-void logger(String logData, bool file = true) {
+void logger(String logData) {
   getLocalTime(&timeinfo);
 
   char timeStringBuff[25];
@@ -61,10 +59,12 @@ void logger(String logData, bool file = true) {
   Serial.println(logMessage);
   delay(10);
 
-  if (!file) {
+  // if debug logging is false quit
+  if(!appConfig.logging) {
     return;
   }
 
+  // logging set to true so log to file
   checkLogFileSize("/log.txt");
 
   File logFile = LittleFS.open("/log.txt", "a");
@@ -77,4 +77,8 @@ void logger(String logData, bool file = true) {
   logFile.close();
 }
 
-#endif
+void deleteLogFile() {
+  if (LittleFS.exists("/log.txt")) {
+    LittleFS.remove("/log.txt");
+  }
+}
