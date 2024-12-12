@@ -9,9 +9,7 @@ WiFiClientSecure wifiClient;
 PubSubClient mqttClient;
 
 
-void mqtt_listen(char* topic, byte* payload, unsigned int length) {
-    logger("MQTT received");
-    logger(topic);
+void mqttListen(char* topic, byte* payload, unsigned int length) {
 
     // parse message
     JsonDocument message;
@@ -64,7 +62,7 @@ void mqtt_listen(char* topic, byte* payload, unsigned int length) {
 }
 
 
-int mqtt_reconnect() {
+int mqttReconnect() {
     
     // check if wifi is connected
     if (WiFi.status() != WL_CONNECTED) {
@@ -102,7 +100,7 @@ int mqtt_reconnect() {
 }
 
 
-bool mqtt_setup() {
+bool mqttSetup() {
 
     if (!appConfig.printerSet) {
         logger("E:  Printer not configured!");
@@ -112,18 +110,18 @@ bool mqtt_setup() {
     wifiClient.setInsecure();
 
     mqttClient.setClient(wifiClient);
-    mqttClient.setBufferSize(6000);
+    mqttClient.setBufferSize(12000);
     mqttClient.setServer(appConfig.ip, 8883);
-    mqttClient.setCallback(mqtt_listen);
+    mqttClient.setCallback(mqttListen);
     mqttClient.setSocketTimeout(20);
 
     return true;
 }
 
 
-void mqtt_loop() {
+void mqttLoop() {
     if (!mqttClient.connected()) {
-        mqtt_reconnect();
+        mqttReconnect();
     }
     mqttClient.loop();
 }

@@ -109,8 +109,8 @@ void setup() {
     startupAnimation();
 
     // start mqtt
-    if (mqtt_setup()) {
-        mqtt_reconnect();
+    if (mqttSetup()) {
+        mqttReconnect();
     }
 }
 
@@ -131,6 +131,6 @@ void loop() {
     lastSwState = reading;
 
     // all the loops
-    wifi_loop();
-    mqtt_loop();
+    wifiLoop();
+    mqttLoop();
 }

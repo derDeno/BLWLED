@@ -420,7 +420,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
       return;
     }
 
-    if (mqtt_reconnect() == 1) {
+    if (mqttReconnect() == 1) {
       request->send(200, "application/json", "{\"status\":\"success\"}");
     } else {
       request->send(200, "application/json", "{\"status\":\"failed\"}");
