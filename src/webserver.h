@@ -412,9 +412,15 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
-    int result = mqtt_reconnect();
     
-    if (result == 1) {
+    // check if already connected
+    bool connected = mqttClient.connected();
+    if (connected) {
+      request->send(200, "application/json", "{\"status\":\"success\"}");
+      return;
+    }
+
+    if (mqtt_reconnect() == 1) {
       request->send(200, "application/json", "{\"status\":\"success\"}");
     } else {
       request->send(200, "application/json", "{\"status\":\"failed\"}");

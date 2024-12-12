@@ -65,6 +65,7 @@ void mqtt_listen(char* topic, byte* payload, unsigned int length) {
 
 
 int mqtt_reconnect() {
+    
     // check if wifi is connected
     if (WiFi.status() != WL_CONNECTED) {
         return 0;
@@ -111,7 +112,7 @@ bool mqtt_setup() {
     wifiClient.setInsecure();
 
     mqttClient.setClient(wifiClient);
-    mqttClient.setBufferSize(1024);
+    mqttClient.setBufferSize(6000);
     mqttClient.setServer(appConfig.ip, 8883);
     mqttClient.setCallback(mqtt_listen);
     mqttClient.setSocketTimeout(20);
