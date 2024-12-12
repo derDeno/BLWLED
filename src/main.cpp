@@ -148,5 +148,8 @@ void loop() {
     }
 
     // capture mqtt messages
+    if (!mqttClient.connected()) {
+        mqtt_reconnect();
+    }
     mqttClient.loop();
 }

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 
@@ -6,7 +7,6 @@ extern AppConfig appConfig;
 
 WiFiClientSecure wifiClient;
 PubSubClient mqttClient;
-String topic = String("device/") + appConfig.sn + String("/report");
 
 
 void mqtt_listen(char* topic, byte* payload, unsigned int length) {
@@ -36,12 +36,15 @@ void mqtt_listen(char* topic, byte* payload, unsigned int length) {
         door_open = true;
     }
 
-    char* light;
+    bool light_on = false;
     for (JsonObject print_lights_report_item : print["lights_report"].as<JsonArray>()) {
 
         // check for the chamber light node
         if(print_lights_report_item["node"] == "chamber_light") {
-            light = print_lights_report_item["mode"];
+            const char* light = print_lights_report_item["mode"];
+            if(strcmp(light, "on") == 0) {
+                light_on = true;
+            }
         }
     }
 
@@ -66,7 +69,13 @@ int mqtt_reconnect() {
 
         if (mqttClient.connect(appConfig.name, "bblp", appConfig.ac)) {
             logger("MQTT connected to printer");
-            mqttClient.subscribe(topic.c_str());
+
+            String topic = String("device/") + appConfig.sn + String("/report");
+            if(mqttClient.subscribe(topic.c_str())) {
+                logger("Subscribed to " + topic);
+            } else {
+                logger("E:  Failed to subscribe to " + topic);
+            }
             return 1;
 
         } else {

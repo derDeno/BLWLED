@@ -1,4 +1,3 @@
-#include <ArduinoJson.h>
 #include <Update.h>
 #include <nvs_flash.h>
 
