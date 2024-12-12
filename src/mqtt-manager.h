@@ -11,10 +11,43 @@ String topic = String("device/") + appConfig.sn + String("/report");
 
 void mqtt_listen(char* topic, byte* payload, unsigned int length) {
     logger(topic);
+
+    char message[length + 1];
+    memcpy(message, payload, length);
+    message[length] = '\0';
+
+    // parse message
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, message);
+    JsonObject print = doc["print"];
+    
+    if(error) {
+        logger("E:  Failed to parse message");
+        return;
+    }
+
+    const char* print_gcode_state = print["gcode_state"];
+    int print_stg_cur = print["stg_cur"];
+
+    long home_flag = print["home_flag"];
+    uint32_t DOOR_OPEN = 0x00800000; // const for door open flag
+    bool door_open = false;
+    if ((home_flag & DOOR_OPEN) == DOOR_OPEN) {
+        door_open = true;
+    }
+
+    char* light;
+    for (JsonObject print_lights_report_item : print["lights_report"].as<JsonArray>()) {
+
+        // check for the chamber light node
+        if(print_lights_report_item["node"] == "chamber_light") {
+            light = print_lights_report_item["mode"];
+        }
+    }
+
+    // debug print
+    Serial.println("Door state: " + String(door_open));
 }
-
-
-void mqtt_parse() {}
 
 
 int mqtt_reconnect() {
@@ -65,3 +98,21 @@ bool mqtt_setup() {
 
     return true;
 }
+
+
+//Thanks to DutchDevelop BLLED Project for the following information
+//Expected information when viewing MQTT status messages
+			
+//gcode_state	stg_cur	    BLLED LED control	    Comments
+//------------------------------------------------------------------------
+//IDLE	        -1	        White	                Printer just powered on
+//RUNNING	    -1	        White	                Printer sent print file
+//RUNNING	     2	        White	                PREHEATING BED
+//RUNNING	    14	        OFF (for Lidar)	        CLEANING NOZZLE
+//RUNNING	     1	        OFF (for Lidar)	        BED LEVELING
+//RUNNING	     8	        OFF (for Lidar)	        CALIBRATING EXTRUSION
+//RUNNING	     0	        White	                All the printing happens here
+//FINISH	    -1	        Green	                After bed is lowered and filament retracted
+//FINISH	    -1	        Green	                BLLED logic waits for a door interaction
+//FINISH	    -1	        White	                After door interaction
+//FINISH	    -1	        OFF                     Inactivity after 30mins
