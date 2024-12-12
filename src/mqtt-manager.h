@@ -10,26 +10,37 @@ PubSubClient mqttClient;
 
 
 void mqtt_listen(char* topic, byte* payload, unsigned int length) {
+    logger("MQTT received");
     logger(topic);
 
-    char message[length + 1];
-    memcpy(message, payload, length);
-    message[length] = '\0';
-
     // parse message
-    JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, message);
-    JsonObject print = doc["print"];
+    JsonDocument message;
+    JsonDocument filter;
+    filter["print"]["command"] =  true;
+    filter["print"]["fail_reason"] =  true;
+    filter["print"]["gcode_state"] =  true;
+    filter["print"]["print_gcode_action"] =  true;
+    filter["print"]["print_real_action"] =  true;
+    filter["print"]["hms"] =  true;
+    filter["print"]["home_flag"] =  true;
+    filter["print"]["lights_report"] =  true;
+    filter["print"]["stg_cur"] =  true;
+    filter["print"]["print_error"] =  true;
+    filter["print"]["wifi_signal"] =  true;
+    filter["system"]["command"] =  true;
+    filter["system"]["led_mode"] =  true;
+
+    DeserializationError error = deserializeJson(message, payload, length, DeserializationOption::Filter(filter));
     
     if(error) {
         logger("E:  Failed to parse message");
         return;
     }
 
-    const char* print_gcode_state = print["gcode_state"];
-    int print_stg_cur = print["stg_cur"];
+    const char* print_gcode_state = message["print"]["gcode_state"];
+    int print_stg_cur = message["print"]["stg_cur"];
 
-    long home_flag = print["home_flag"];
+    long home_flag = message["print"]["home_flag"];
     uint32_t DOOR_OPEN = 0x00800000; // const for door open flag
     bool door_open = false;
     if ((home_flag & DOOR_OPEN) == DOOR_OPEN) {
@@ -37,7 +48,7 @@ void mqtt_listen(char* topic, byte* payload, unsigned int length) {
     }
 
     bool light_on = false;
-    for (JsonObject print_lights_report_item : print["lights_report"].as<JsonArray>()) {
+    for (JsonObject print_lights_report_item : message["print"]["lights_report"].as<JsonArray>()) {
 
         // check for the chamber light node
         if(print_lights_report_item["node"] == "chamber_light") {
@@ -108,6 +119,13 @@ bool mqtt_setup() {
     return true;
 }
 
+
+void mqtt_loop() {
+    if (!mqttClient.connected()) {
+        mqtt_reconnect();
+    }
+    mqttClient.loop();
+}
 
 //Thanks to DutchDevelop BLLED Project for the following information
 //Expected information when viewing MQTT status messages

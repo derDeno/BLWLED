@@ -3,5 +3,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+build
 assets/wwww
+assets/backup.blwled
+assets/temp icon.ai
 .DS_Store
+compile_commands.json

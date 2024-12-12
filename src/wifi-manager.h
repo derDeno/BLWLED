@@ -4,6 +4,10 @@
 extern AppConfig appConfig;
 extern Preferences pref;
 
+static unsigned long lastAttemptTime = 0;
+const unsigned long reconnectInterval = 100;
+
+
 //setup mDNS
 void setupMDNS() {
     if (MDNS.begin("blwled")) {
@@ -90,4 +94,15 @@ void scanNetworks() {
 // setup in AP Mode if no WiFi set
 void setupWifiAp() {
     WiFi.softAP("BLWLED");
+}
+
+void wifi_loop() {
+    if (WiFi.status() != WL_CONNECTED) {
+        if (millis() - lastAttemptTime > reconnectInterval) {
+            lastAttemptTime = millis();
+            logger("W: Lost WiFi connection. Attempting reconnect...");
+            WiFi.disconnect();
+            WiFi.reconnect();
+        }
+    }
 }

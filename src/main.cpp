@@ -27,7 +27,6 @@ int lastSwState = HIGH;
 
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
-unsigned int wifireconnect = 0;
 
 void initState() {
     pref.begin("deviceSettings");
@@ -131,25 +130,7 @@ void loop() {
     }
     lastSwState = reading;
 
-    // capture wifi disconnect
-    if (WiFi.status() != WL_CONNECTED) {
-        logger("W:  Lost WiFi connection");
-        logger("Retrying to connect to " + String(appConfig.ssid));
-
-        wifireconnect += 1;
-
-        if (wifireconnect < 10) {
-            WiFi.disconnect();
-            delay(100);
-            WiFi.reconnect();
-        } else {
-            // 10 reconnection attempts failed, try other methods
-        }
-    }
-
-    // capture mqtt messages
-    if (!mqttClient.connected()) {
-        mqtt_reconnect();
-    }
-    mqttClient.loop();
+    // all the loops
+    wifi_loop();
+    mqtt_loop();
 }
