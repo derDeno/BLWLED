@@ -8,6 +8,13 @@ extern AppConfig appConfig;
 WiFiClientSecure wifiClient;
 PubSubClient mqttClient;
 
+// previous printer state
+bool pLightOn = false;
+bool pDoorOpen = false;
+char pGcodeState[10] = "";
+int pStgCur = -99;
+int printFinishedTime = -1;
+
 
 void mqttListen(char* topic, byte* payload, unsigned int length) {
 
@@ -38,27 +45,140 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     const char* print_gcode_state = message["print"]["gcode_state"];
     int print_stg_cur = message["print"]["stg_cur"];
 
+    // parse home flag
     long home_flag = message["print"]["home_flag"];
     uint32_t DOOR_OPEN = 0x00800000; // const for door open flag
-    bool door_open = false;
+    bool doorOpen = false;
     if ((home_flag & DOOR_OPEN) == DOOR_OPEN) {
-        door_open = true;
+        doorOpen = true;
     }
 
-    bool light_on = false;
+    // parse light state
+    bool lightOn = false;
     for (JsonObject print_lights_report_item : message["print"]["lights_report"].as<JsonArray>()) {
 
         // check for the chamber light node
         if(print_lights_report_item["node"] == "chamber_light") {
             const char* light = print_lights_report_item["mode"];
             if(strcmp(light, "on") == 0) {
-                light_on = true;
+                lightOn = true;
             }
         }
     }
 
-    // debug print
-    Serial.println("Door state: " + String(door_open));
+    // check for gcode state change
+    switch (print_stg_cur) {
+        case -1:
+            if(strcmp(print_gcode_state, "IDLE") == 0) {
+                eventBus(EVENT_PRINTER_IDLE);
+
+            } else if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                // printer sent print file - no event specified yet
+
+            } else if(strcmp(print_gcode_state, "FINISH") == 0) {
+                printFinishedTime = millis();
+                eventBus(EVENT_PRINT_FINISHED);
+            }
+            break;
+        case 0:
+            if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                eventBus(EVENT_PRINTING);
+            }
+            break;
+        case 1:
+            if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                eventBus(EVENT_BED_LEVELING);
+            }
+            break;
+        case 2:
+            if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                eventBus(EVENT_PREHEAT_BED);
+            }
+            break;
+        case 8:
+            if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                eventBus(EVENT_EXTRUSION_CALIBRATION);
+            }
+            break;
+        case 14:
+            if(strcmp(print_gcode_state, "RUNNING") == 0) {
+                eventBus(EVENT_CLEANING_NOZZLE);
+            }
+            break;
+        default:
+            break;
+    }
+
+
+    // door state change while idle
+    if(pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "IDLE") == 0) {
+        if(pDoorOpen != doorOpen) {
+            if(doorOpen) {
+                eventBus(EVENT_DOOR_OPEN_IDLE);
+            } else {
+                eventBus(EVENT_DOOR_CLOSE_IDLE);
+            }
+        }
+    }
+
+    // door state change while printing
+    if(pStgCur == 0 && print_stg_cur == 0 && strcmp(print_gcode_state, "RUNNING") == 0) {
+        if(pDoorOpen != doorOpen) {
+            if(doorOpen) {
+                eventBus(EVENT_DOOR_OPEN_PRINT);
+            } else {
+                eventBus(EVENT_DOOR_CLOSE_PRINT);
+            }
+        }
+    }
+
+    // door state change while finish
+    if(pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "FINISH") == 0) {
+        if(pDoorOpen != doorOpen) {
+            if(doorOpen) {
+                eventBus(EVENT_DOOR_OPEN_FINISH);
+            } else {
+                eventBus(EVENT_DOOR_CLOSE_FINISH);
+            }
+        }
+    }
+
+    // light state change
+    if(pLightOn != lightOn) {
+        if(lightOn) {
+            eventBus(EVENT_LIGHT_ON);
+        } else {
+            eventBus(EVENT_LIGHT_OFF);
+        }
+    }
+
+
+    // check appconfig if return to idle after door open is enabled and print is finished
+    if(appConfig.rtid && printFinishedTime != -1) {
+        if(pDoorOpen != doorOpen) {
+            if(doorOpen) {
+                eventBus(EVENT_PRINTER_IDLE);
+                printFinishedTime = -1;
+            }
+        }
+    }
+
+
+    // check appconfig if return to standby is enabled and if so, when to return (time) after print finished
+    if(appConfig.rtid && printFinishedTime != -1) {
+        if((millis() - printFinishedTime) > (appConfig.rtsb * 1000)) {
+            eventBus(EVENT_PRINTER_STANDBY);
+            printFinishedTime = -1;
+        }
+    }
+
+
+
+    // save current state
+    pLightOn = lightOn;
+    pDoorOpen = doorOpen;
+    pStgCur = print_stg_cur;
+    strcpy(pGcodeState, print_gcode_state);
 }
 
 

@@ -10,9 +10,9 @@
 #include "log.h"
 #include "wifi-manager.h"
 #include "led-manager.h"
-#include "mqtt-manager.h"
 #include "action.h"
 #include "events.h"
+#include "mqtt-manager.h"
 #include "webserver.h"
 
 
@@ -57,7 +57,7 @@ void initState() {
     strcpy(appConfig.ac, pref.getString("ac", PREF_AC).c_str());
     strcpy(appConfig.sn, pref.getString("sn", PREF_SN).c_str());
     appConfig.rtid = pref.getBool("rtid", PREF_RTID);
-    appConfig.rtit = pref.getInt("rtit", PREF_RTIT);
+    appConfig.rtsb = pref.getInt("rtsb", PREF_RTSB);
     pref.end();
 
     pref.begin("wifi", true);

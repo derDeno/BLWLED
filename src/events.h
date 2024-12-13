@@ -20,7 +20,10 @@ typedef enum {
     EVENT_DOOR_OPEN_PRINT,
     EVENT_DOOR_CLOSE_PRINT,
     EVENT_DOOR_OPEN_FINISH,
-    EVENT_DOOR_CLOSE_FINISH
+    EVENT_DOOR_CLOSE_FINISH,
+    EVENT_LIGHT_ON,
+    EVENT_LIGHT_OFF,
+    EVENT_PRINTER_STANDBY
 } EventType;
 
 void eventMaintenance() {
@@ -53,6 +56,7 @@ void eventMaintenance() {
 void eventBus(EventType event) {
     switch (event) {
         case EVENT_SW_CLICK:
+            logger("Event: SW Click");
             if (appConfig.sw) {
                 if (appConfig.action == 1) {
                     eventMaintenance();
@@ -60,35 +64,71 @@ void eventBus(EventType event) {
                     ESP.restart();
                 }
             }
-            
             break;
         case EVENT_PRINTER_IDLE:
+            logger("Event: Printer Idle");
             break;
         case EVENT_PREHEAT_BED:
+            logger("Event: Preheat Bed");
             break;
         case EVENT_CLEANING_NOZZLE:
+            logger("Event: Cleaning Nozzle");
+            FastLED.clear(true);
             break;
         case EVENT_BED_LEVELING:
+            logger("Event: Bed Leveling");
+            FastLED.clear(true);
             break;
         case EVENT_EXTRUSION_CALIBRATION:
+            logger("Event: Extrusion Calibration");
+            FastLED.clear(true);
             break;
         case EVENT_PRINTING:
+            logger("Event: Printing");
+            actionColorWled("#ffffff", 50);
             break;
         case EVENT_PRINT_FINISHED:
+            logger("Event: Print Finished");
+            actionColorWled("#00ff00", 125);
             break;
         case EVENT_PRINT_FAILED:
+            logger("Event: Print Failed");
             break;
         case EVENT_DOOR_OPEN_IDLE:
+            logger("Event: Door Open Idle");
+            actionColorWled("#ffffff", 255);
             break;
         case EVENT_DOOR_CLOSE_IDLE:
+            logger("Event: Door Close Idle");
+            actionColorWled("#ffffff", 50);
             break;
         case EVENT_DOOR_OPEN_PRINT:
+            logger("Event: Door Open Print");
             break;
         case EVENT_DOOR_CLOSE_PRINT:
+            logger("Event: Door Close Print");
             break;
         case EVENT_DOOR_OPEN_FINISH:
+            logger("Event: Door Open Finish");
+            actionColorWled("#ffffff", 255);
             break;
         case EVENT_DOOR_CLOSE_FINISH:
+            logger("Event: Door Close Finish");
+            FastLED.clear(true);
+            break;
+        case EVENT_LIGHT_ON:
+            logger("Event: Light On");
+            actionColorWled("#ffffff", 125);
+            break;
+        case EVENT_LIGHT_OFF:
+            logger("Event: Light Off");
+            FastLED.clear(true);
+            break;
+        case EVENT_PRINTER_STANDBY:
+            logger("Event: Printer Standby");
+            FastLED.clear(true);
+            break;
+        default:
             break;
     }
 }

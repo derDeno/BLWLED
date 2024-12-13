@@ -146,14 +146,14 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
     const char* ac = printer["ac"];
     const char* sn = printer["sn"];
     const bool rtid = printer["rtid"];
-    const uint8_t rtit = printer["rtit"];
+    const uint8_t rtsb = printer["rtsb"];
 
     pref.begin("printerSettings");
     pref.putString("ip", ip);
     pref.putString("ac", ac);
     pref.putString("sn", sn);
     pref.putBool("rtid", rtid);
-    pref.putInt("rtit", rtit);
+    pref.putInt("rtsb", rtsb);
     pref.end();
 
     // wifi settings
@@ -363,7 +363,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     doc["accessCode"] = appConfig.ac;
     doc["sn"] = appConfig.sn;
     doc["rtid"] = appConfig.rtid;
-    doc["rtit"] = appConfig.rtit;
+    doc["rtsb"] = appConfig.rtsb;
 
     serializeJson(doc, *response);
     request->send(response);
@@ -397,9 +397,9 @@ void setupSettingsRoutes(AsyncWebServer &server) {
       pref.putBool("rtid", rtid);
     }
 
-    if (request->hasParam("rtit", true)) {
-      int returnToIdleTime = request->getParam("rtit", true)->value().toInt();
-      pref.putInt("rtit", returnToIdleTime);
+    if (request->hasParam("rtsb", true)) {
+      int returnToStandBy = request->getParam("rtsb", true)->value().toInt();
+      pref.putInt("rtsb", returnToStandBy);
     }
     
     pref.end();
@@ -590,7 +590,7 @@ void setupFileRoutes(AsyncWebServer &server) {
     printer["ac"] = appConfig.ac;
     printer["sn"] = appConfig.sn;
     printer["rtid"] = appConfig.rtid;
-    printer["rtit"] = appConfig.rtit;
+    printer["rtsb"] = appConfig.rtsb;
 
     JsonObject wifi = doc["wifi"].to<JsonObject>();
     wifi["setup"] = setup;

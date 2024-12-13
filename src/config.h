@@ -20,7 +20,7 @@
 #define PREF_ACTION 1
 #define PREF_LOGGING false
 #define PREF_RTID true
-#define PREF_RTIT 10
+#define PREF_RTSB 10
 
 // Dev defaults
 #define PREF_IP "192.168.1.211"
@@ -32,7 +32,7 @@
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version("0.1.0-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtit(10), wifiSet(false), printerSet(false) {
+    AppConfig() : version("0.1.0-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtsb(10), wifiSet(false), printerSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -60,8 +60,8 @@ struct AppConfig {
     char ip[16];        // printer ip
     char ac[16];        // access code
     char sn[16];        // serial number
-    bool rtid;          // return to idle after door opened
-    uint8_t rtit;       // return to idle time in seconds
+    bool rtid;          // return to idle after door opened while print finished
+    uint8_t rtsb;       // return to standby time in seconds
 
     // WiFi settings
     bool wifiSet;       // Was WiFi already set up

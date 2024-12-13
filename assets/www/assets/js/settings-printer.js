@@ -8,7 +8,7 @@ async function loadPrinterSettings() {
             document.getElementById('settings-printer-access-code').value = settings.accessCode || '';
             document.getElementById('settings-printer-sn').value = settings.sn || '';
             document.getElementById('settings-printer-return-idle-door').value = settings.rtid ? 'true' : 'false';
-            document.getElementById('settings-printer-return-idle-time').value = settings.rtit || '';
+            document.getElementById('settings-printer-return-standby-time').value = settings.rtsb || '';
         } else {
             console.error('Failed to load printer settings');
         }
@@ -23,7 +23,7 @@ async function savePrinterSettings() {
     const accessCode = document.getElementById('settings-printer-access-code').value;
     const sn = document.getElementById('settings-printer-sn').value;
     const returnToIdleDoor = document.getElementById('settings-printer-return-idle-door').value;
-    const returnIdleTime = document.getElementById('settings-printer-return-idle-time').value;
+    const returnStandByTime = document.getElementById('settings-printer-return-standby-time').value;
 
     // Create form data to send to the API
     const formData = new URLSearchParams();
@@ -31,7 +31,7 @@ async function savePrinterSettings() {
     formData.append('ac', accessCode);
     formData.append('sn', sn);
     formData.append('rtid', returnToIdleDoor === 'true');
-    formData.append('rtit', returnIdleTime);
+    formData.append('rtsb', returnStandByTime);
 
     try {
         const response = await fetch('/api/settings-printer', {
