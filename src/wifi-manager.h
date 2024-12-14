@@ -96,6 +96,7 @@ void setupWifiAp() {
     WiFi.softAP("BLWLED");
 }
 
+// loop for WiFi
 void wifiLoop() {
     if (WiFi.status() != WL_CONNECTED) {
         if (millis() - lastAttemptTime > reconnectInterval) {

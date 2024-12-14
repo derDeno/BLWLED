@@ -21,3 +21,20 @@ td:last-child {
   filter: invert(100%);
 }
 
+.rainbow-button {
+  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+  background-size: 100%;
+  color: white;
+  border: none;
+  transition: background-position 0.5s ease-in-out;
+}
+
+.rainbow-button:hover {
+  background-position: 100%;
+}
+
+.rainbow-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.5);
+}
+

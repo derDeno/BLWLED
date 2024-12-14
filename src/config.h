@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+// System Defenition
+#define VERSION "0.1.2"
+
 // Pins Defenition
 #define WLED_PIN 18
 #define ANALOG_PIN_R 17
@@ -29,10 +32,13 @@
 #define PREF_SSID "Unbekannt"
 #define PREF_PASS "ffYkexQAETVIb"
 
+/**
+ * Application Configuration
+ */
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version("0.1.0-alpha"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtsb(10), wifiSet(false), printerSet(false) {
+    AppConfig() : version(VERSION), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtsb(10), wifiSet(false), printerSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");

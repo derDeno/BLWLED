@@ -5,6 +5,8 @@ struct tm timeinfo;
 const size_t MAX_LOG_FILE_SIZE = 50 * 1024;  // 50 KB
 extern AppConfig appConfig;
 
+
+// check the log file size and trim if needed
 void checkLogFileSize(const char* fileName) {
     File logFile = LittleFS.open(fileName, "r");
     if (!logFile) {
@@ -49,6 +51,8 @@ void checkLogFileSize(const char* fileName) {
     }
 }
 
+
+// log data to serial and file
 void logger(String logData) {
     getLocalTime(&timeinfo);
 
@@ -77,6 +81,8 @@ void logger(String logData) {
     logFile.close();
 }
 
+
+// delete log file
 void deleteLogFile() {
   if (LittleFS.exists("/log.txt")) {
       LittleFS.remove("/log.txt");

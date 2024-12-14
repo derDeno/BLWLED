@@ -4,10 +4,11 @@ extern AppConfig appConfig;
 extern CRGB *leds;
 
 
-/**
- * Helper Functions
- */
 
+/**
+ * Convert pin name to pin number
+ * @param output    pin name
+ */
 int outputToPin(const char* output) {
     if (strcmp(output, "analog-r") == 0) {
         return ANALOG_PIN_R;
@@ -27,10 +28,14 @@ int outputToPin(const char* output) {
 
 
 /**
- * Actions
+ * Pin Control action. Perform action defined in mapping
+ * @param pin               pin name
+ * @param control           control action (on, off, flash)
+ * @param invert            invert control
+ * @param invert_delay      delay for invert in seconds
+ * @param flash_timout      flash timeout in seconds
+ * @param flash_count       flash count
  */
-
-// Pin Control action. Perform action defined in mapping
 void actionPinControl(const char* pin, String control, bool invert = false, int invert_delay = 0, int flash_timout = 0, int flash_count = 0) {
     int outputPin = outputToPin(pin);
 
@@ -57,7 +62,16 @@ void actionPinControl(const char* pin, String control, bool invert = false, int 
     }
 }
 
-// WLED Control action. Perform action defined in mapping
+
+/**
+ * WLED Control action. Perform action defined in mapping
+ * @param color             hex color value
+ * @param brightness        brightness value 1-255
+ * @param blink             blink yes/no
+ * @param blink_delay       blink delay in seconds
+ * @param turn_off          turn off after delay
+ * @param turn_off_delay    turn off delay in seconds
+ */
 void actionColorWled(const char* color, int brightness = 255, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
 
     const char* hexColor = color + 1;
@@ -97,7 +111,27 @@ void actionColorWled(const char* color, int brightness = 255, bool blink = false
     }*/
 }
 
-// Color Control action. Perform action defined in mapping
+
+// Turn off WLED
+void actionColorWledOff() {
+    FastLED.clear(true);
+}
+
+
+/**
+ * Color Control action. Perform action defined in mapping
+ * @param color             hex color value
+ * @param r_pin             red pin
+ * @param g_pin             green pin
+ * @param b_pin             blue pin
+ * @param ww_pin            warm white pin
+ * @param cw_pin            cold white pin
+ * @param brightness        brightness value 1-255
+ * @param blink             blink yes/no
+ * @param blink_delay       blink delay in seconds
+ * @param turn_off          turn off after delay
+ * @param turn_off_delay    turn off delay in seconds
+ */
 void actionColor(const char* color, const char* r_pin, const char* g_pin, const char* b_pin, const char* ww_pin, const char* cw_pin, int brightness, bool blink = false, int blink_delay = 0, bool turn_off = false, int turn_off_delay = 0) {
 
     const char* hexColor = color + 1;
@@ -157,16 +191,44 @@ void actionColor(const char* color, const char* r_pin, const char* g_pin, const 
 }
 
 
-void actionColorOff(const char* r_pin, const char* g_pin, const char* b_pin, const char* ww_pin, const char* cw_pin) {
-    int pinR = outputToPin(r_pin);
-    int pinG = outputToPin(g_pin);
-    int pinB = outputToPin(b_pin);
-    int pinWW = outputToPin(ww_pin);
-    int pinCW = outputToPin(cw_pin);
+/**
+ * Turn off color
+ * @param pin       pin name or "all" for all pins
+ */
+void actionColorOff(const char* pin) {
 
-    analogWrite(pinR, 0);
-    analogWrite(pinG, 0);
-    analogWrite(pinB, 0);
-    analogWrite(pinWW, 0);
-    analogWrite(pinCW, 0);
+    if(strcmp(pin, "all") == 0) {
+        analogWrite(ANALOG_PIN_R, 0);
+        analogWrite(ANALOG_PIN_G, 0);
+        analogWrite(ANALOG_PIN_B, 0);
+        analogWrite(ANALOG_PIN_WW, 0);
+        analogWrite(ANALOG_PIN_CW, 0);
+        return;
+    }
+
+    int outputPin = outputToPin(pin);
+    analogWrite(outputPin, 0);
+}
+
+/**
+ * WLED Rainbow action
+ * @param brightness        brightness value 1-255
+ * @param speed             how many hue steps to take 1-255
+ * @param loop              loop animation
+ */
+void actionWledRainbow(int brightness = 255, int speed = 10, bool loop = false) {
+    FastLED.clear(true);
+    FastLED.setBrightness(brightness);
+
+    int hue = 0;
+    while (true) {
+        fill_rainbow(leds, appConfig.count, hue, speed);
+        FastLED.show();
+        hue++;
+        delay(10);
+
+        if (!loop && hue > 255) {
+            break;
+        }
+    }
 }

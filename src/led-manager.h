@@ -38,7 +38,7 @@ void startupAnimation() {
         FastLED.setBrightness(255);
 
         int hue = 0;
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 255; i++) {
             fill_rainbow(leds, appConfig.count, hue, 10);
             FastLED.show();
             hue++;

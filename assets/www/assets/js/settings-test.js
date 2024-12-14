@@ -65,3 +65,29 @@ document.getElementById("btn-test-off").addEventListener("click", async function
 		console.error("Error sending turn off:", error);
 	}
 });
+
+document.getElementById("btn-rainbow").addEventListener("click", async function () {
+	const output = document.getElementById("test-output");
+
+	const formData = new URLSearchParams();
+	formData.append("rainbow", true);
+	formData.append("output", output.value);
+
+    try {
+		const response = await fetch("/api/color", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: formData.toString(),
+		});
+
+		if (response.ok) {
+			// nothing here yet
+		} else {
+			console.error("Failed to rainbow");
+		}
+	} catch (error) {
+		console.error("Error sending rainbow:", error);
+	}
+});

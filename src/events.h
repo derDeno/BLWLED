@@ -5,6 +5,9 @@ extern CRGB *leds;
 
 bool maintenanceToggle = false;
 
+/**
+ * Event types
+ */
 typedef enum {
     EVENT_SW_CLICK,
     EVENT_PRINTER_IDLE,
@@ -23,9 +26,14 @@ typedef enum {
     EVENT_DOOR_CLOSE_FINISH,
     EVENT_LIGHT_ON,
     EVENT_LIGHT_OFF,
-    EVENT_PRINTER_STANDBY
+    EVENT_PRINTER_STANDBY,
+    EVENT_RAINBOW
 } EventType;
 
+
+/**
+ * Maintenance event. Toggle maintenance mode
+ */
 void eventMaintenance() {
     if (!maintenanceToggle) {
         if (appConfig.wled) {
@@ -40,11 +48,11 @@ void eventMaintenance() {
         maintenanceToggle = true;
     } else {
         if (appConfig.wled) {
-            FastLED.clear(true);
+            actionColorWledOff();
 
         } else if (appConfig.analog) {
             if (appConfig.mode == 1) {
-                actionColor("#000000", "analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw", 0);
+                actionColorOff("all");
             }
         }
 
@@ -53,6 +61,10 @@ void eventMaintenance() {
 }
 
 
+/**
+ * Event bus. Handle events
+ * @param event     event type
+ */
 void eventBus(EventType event) {
     switch (event) {
         case EVENT_SW_CLICK:
@@ -73,15 +85,15 @@ void eventBus(EventType event) {
             break;
         case EVENT_CLEANING_NOZZLE:
             logger("Event: Cleaning Nozzle");
-            FastLED.clear(true);
+            actionColorWledOff();
             break;
         case EVENT_BED_LEVELING:
             logger("Event: Bed Leveling");
-            FastLED.clear(true);
+            actionColorWledOff();
             break;
         case EVENT_EXTRUSION_CALIBRATION:
             logger("Event: Extrusion Calibration");
-            FastLED.clear(true);
+            actionColorWledOff();
             break;
         case EVENT_PRINTING:
             logger("Event: Printing");
@@ -114,7 +126,7 @@ void eventBus(EventType event) {
             break;
         case EVENT_DOOR_CLOSE_FINISH:
             logger("Event: Door Close Finish");
-            FastLED.clear(true);
+            actionColorWledOff();
             break;
         case EVENT_LIGHT_ON:
             logger("Event: Light On");
@@ -122,11 +134,15 @@ void eventBus(EventType event) {
             break;
         case EVENT_LIGHT_OFF:
             logger("Event: Light Off");
-            FastLED.clear(true);
+            actionColorWledOff();
             break;
         case EVENT_PRINTER_STANDBY:
             logger("Event: Printer Standby");
-            FastLED.clear(true);
+            actionColorWledOff();
+            break;
+        case EVENT_RAINBOW:
+            logger("Event: Rainbow");
+            actionWledRainbow(255, 10, true);
             break;
         default:
             break;

@@ -14,6 +14,7 @@ bool pDoorOpen = false;
 char pGcodeState[10] = "";
 int pStgCur = -99;
 int printFinishedTime = -1;
+int printIdleTime = -1;
 
 
 void mqttListen(char* topic, byte* payload, unsigned int length) {
@@ -70,6 +71,7 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     switch (print_stg_cur) {
         case -1:
             if(strcmp(print_gcode_state, "IDLE") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+                printIdleTime = millis();
                 eventBus(EVENT_PRINTER_IDLE);
 
             } else if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
@@ -157,21 +159,26 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     if(appConfig.rtid && printFinishedTime != -1) {
         if(pDoorOpen != doorOpen) {
             if(doorOpen) {
-                eventBus(EVENT_PRINTER_IDLE);
                 printFinishedTime = -1;
+                printIdleTime = millis();
+                eventBus(EVENT_PRINTER_IDLE);
             }
         }
     }
 
 
-    // check appconfig if return to standby is enabled and if so, when to return (time) after print finished
-    if(appConfig.rtid && printFinishedTime != -1) {
+    // check appconfig if return to standby is enabled and if so, when to return (time) after print finished or idle
+    if(printFinishedTime != -1 && appConfig.rtsb > 0) {
         if((millis() - printFinishedTime) > (appConfig.rtsb * 1000)) {
-            eventBus(EVENT_PRINTER_STANDBY);
             printFinishedTime = -1;
+            eventBus(EVENT_PRINTER_STANDBY);
+        }
+    }else if(printIdleTime != -1 && appConfig.rtsb > 0) {
+        if((millis() - printIdleTime) > (appConfig.rtsb * 1000)) {
+            printIdleTime = -1;
+            eventBus(EVENT_PRINTER_STANDBY);
         }
     }
-
 
 
     // save current state
@@ -246,19 +253,4 @@ void mqttLoop() {
     mqttClient.loop();
 }
 
-//Thanks to DutchDevelop BLLED Project for the following information
-//Expected information when viewing MQTT status messages
-			
-//gcode_state	stg_cur	    BLLED LED control	    Comments
-//------------------------------------------------------------------------
-//IDLE	        -1	        White	                Printer just powered on
-//RUNNING	    -1	        White	                Printer sent print file
-//RUNNING	     2	        White	                PREHEATING BED
-//RUNNING	    14	        OFF (for Lidar)	        CLEANING NOZZLE
-//RUNNING	     1	        OFF (for Lidar)	        BED LEVELING
-//RUNNING	     8	        OFF (for Lidar)	        CALIBRATING EXTRUSION
-//RUNNING	     0	        White	                All the printing happens here
-//FINISH	    -1	        Green	                After bed is lowered and filament retracted
-//FINISH	    -1	        Green	                BLLED logic waits for a door interaction
-//FINISH	    -1	        White	                After door interaction
-//FINISH	    -1	        OFF                     Inactivity after 30mins
+// TODO: Add HMS error handling and print error handling

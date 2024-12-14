@@ -668,6 +668,7 @@ void setupApiRoutes(AsyncWebServer &server) {
     int output = -1;
     int brightness = 255;
     bool turnoff = false;
+    bool rainbow = false;
 
     if (request->hasParam("color", true)) {
       color = request->getParam("color", true)->value();
@@ -685,11 +686,19 @@ void setupApiRoutes(AsyncWebServer &server) {
       turnoff = true;
     }
 
+    if (request->hasParam("rainbow", true)) {
+      rainbow = true;
+    }
+
     if(turnoff == true) {
       if(output == 1) {
-        FastLED.clear(true);
+        actionColorWledOff();
       }else {
-        actionColorOff("analog-r", "analog-g", "analog-b", "analog-ww", "analog-cw");
+        actionColorOff("all");
+      }
+    }else if(rainbow == true) {
+      if(output == 1) {
+        actionWledRainbow(brightness, 10, true);
       }
 
     }else {
