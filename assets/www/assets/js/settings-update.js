@@ -21,7 +21,7 @@ async function uploadOTA() {
 
 async function showOtaProgress() {
     const modal = new bootstrap.Modal(document.getElementById("modal-ota"));
-	document.getElementById("ota-progress-txt").innerText = "Installing...";
+	document.getElementById("ota-progress-txt").innerText = "";
 	document.querySelector(".progress-bar").style.width = "0%";
 	document.querySelector(".progress-bar").innerText = "0%";
 	document.querySelector(".progress-bar").classList.remove("bg-danger");
@@ -39,7 +39,6 @@ async function showOtaProgress() {
 
 		source.addEventListener("ota-progress", function (e) {
 				console.log("OTA Progress: " + e.data + "%");
-				document.getElementById("ota-progress-txt").innerText = "Installing: " + e.data + "%";
 
 				document.querySelector(".progress-bar").style.width = e.data + "%";
 				document.querySelector(".progress-bar").innerText = e.data + "%";
@@ -55,7 +54,7 @@ async function showOtaProgress() {
 
 					setTimeout(() => {
 						window.location.reload();
-					}, 5000);
+					}, 8000);
 				}
 
 		}, false);
@@ -63,10 +62,9 @@ async function showOtaProgress() {
 		source.addEventListener("error", function (e) {
 			if (e.readyState == EventSource.CLOSED) {
 				console.error("Connection closed");
-				document.getElementById("ota-progress-txt").innerText = "Connection closed";
 
 				document.querySelector(".progress-bar").style.width = "100%";
-				document.querySelector(".progress-bar").innerText = "100%";
+				document.querySelector(".progress-bar").innerText = "Error";
 				document.querySelector(".progress-bar").classList.remove("bg-success");
 				document.querySelector(".progress-bar").classList.add("bg-danger");
 				document.querySelector(".progress-bar").classList.remove("progress-bar-striped");
@@ -80,7 +78,7 @@ async function showOtaProgress() {
 
 				setTimeout(() => {
 					window.location.reload();
-				}, 5000);
+				}, 8000);
 			}
 		}, false);
 	}
