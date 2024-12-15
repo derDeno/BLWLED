@@ -8,11 +8,11 @@
 
 #include "config.h"
 #include "log.h"
-#include "wifi-manager.h"
-#include "led-manager.h"
+#include "wifi-helper.h"
+#include "led-helper.h"
 #include "action.h"
 #include "events.h"
-#include "mqtt-manager.h"
+#include "mqtt-helper.h"
 #include "webserver.h"
 
 
@@ -27,6 +27,7 @@ int lastSwState = HIGH;
 
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
+
 
 void initState() {
     pref.begin("deviceSettings");
@@ -69,6 +70,7 @@ void initState() {
     appConfig.printerSet = (strlen(appConfig.ip) > 0 && strlen(appConfig.ac) > 0 && strlen(appConfig.sn) > 0) ? true : false;
 }
 
+
 void setup() {
     Serial.begin(74880);
 
@@ -100,8 +102,14 @@ void setup() {
     pinMode(ANALOG_PIN_WW, OUTPUT);
     pinMode(WLED_PIN, OUTPUT);
 
+    // setup events
+    events.onConnect([](AsyncEventSourceClient *client) {
+        client->send("hello!", NULL, millis(), 1000);
+    });
+
     // Start server
     routing(server);
+    server.addHandler(&events);
     server.begin();
     logger("HTTP server started");
     logger(String(appConfig.name) + " is ready!");
@@ -113,6 +121,7 @@ void setup() {
         mqttReconnect();
     }
 }
+
 
 void loop() {
     // react to switch press

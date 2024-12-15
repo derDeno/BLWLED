@@ -6,7 +6,6 @@ extern Preferences pref;
 extern AppConfig appConfig;
 
 uint8_t otaDone = 0;
-size_t totalSize = 0;
 
 
 String processorInfo(const String &var) {
@@ -175,38 +174,41 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 }
 
 
-void handleUploadOTA(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-  if (!index) {
-    logger("Update Start: " + filename);
-    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+void handleUploadOTA(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
+  static size_t totalSize = 0;
+  
+  if (index == 0) {
+    logger("W:  OTA update Start: " + filename);
+
+    if (!Update.begin(request->contentLength())) {
       Update.printError(Serial);
-      request->send(500, "text/plain", "Update Failed: Could not begin OTA");
       return;
     }
+
     totalSize = 0;
   }
 
-  if (!Update.hasError()) {
+  if (!Update.hasError() && len > 0) {
     if (Update.write(data, len) != len) {
       Update.printError(Serial);
+
     } else {
       totalSize += len;
       int progress = (totalSize * 100) / request->contentLength();
+      Serial.println("OTA Progress: " + String(progress) + "%");
       events.send(String(progress).c_str(), "ota-progress", millis());
     }
   }
 
   if (final) {
     if (Update.end(true)) {
-      String msg = "Update Success: " + String(index + len) + "B";
+      String msg = "Update Success: " + String(index + len) + "bytes written";
       logger(msg);
       events.send("100", "ota-progress", millis());
 
-      delay(1000);
-      ESP.restart();
     } else {
       Update.printError(Serial);
-      request->send(500, "text/plain", "Update Failed: Could not finalize OTA");
+      events.send("error", "ota-progress", millis());
     }
   }
 }
@@ -604,11 +606,27 @@ void setupFileRoutes(AsyncWebServer &server) {
 
   server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
     request->send(200); 
-  }, handleUploadRestore);
+  }, handleUploadRestore); 
 
   server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
-    request->send(200);
+    if(Update.hasError()) {
+        request->send(500, "text/plain", "OTA Update Failed! Check Logs for details.");
+
+      }else {
+
+        logger("OTA Update complete, rebooting...");
+
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OTA Update Successful! Rebooting...");
+        response->addHeader("Connection", "close");
+        request->send(response);
+
+        request->onDisconnect([]() {
+          delay(2000);
+          ESP.restart();
+        });
+      }
   }, handleUploadOTA);
+  
 }
 
 
