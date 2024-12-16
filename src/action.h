@@ -217,17 +217,21 @@ void actionColorOff(const char* pin) {
  * @param loop              loop animation
  */
 void actionWledRainbow(int brightness = 255, int speed = 10, bool loop = false) {
-    FastLED.clear(true);
     FastLED.setBrightness(brightness);
 
     int hue = 0;
     while (true) {
         fill_rainbow(leds, appConfig.count, hue, speed);
         FastLED.show();
-        hue++;
-        delay(10);
 
-        if (!loop && hue > 255) {
+         hue += speed;
+        if (hue >= 256) {
+            hue -= 256;
+        }
+        delay(10);
+        yield();
+
+        if (!loop && hue == 0) {
             break;
         }
     }

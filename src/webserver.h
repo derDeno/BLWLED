@@ -716,7 +716,7 @@ void setupApiRoutes(AsyncWebServer &server) {
       }
     }else if(rainbow == true) {
       if(output == 1) {
-        actionWledRainbow(brightness, 10, true);
+        actionWledRainbow(brightness, 1, true);
       }
 
     }else {
