@@ -10,22 +10,29 @@ const unsigned long reconnectInterval = 100;
 
 //setup mDNS
 void setupMDNS() {
-    if (MDNS.begin("blwled")) {
-        MDNS.addService("http", "tcp", 80);
-        logger("Hostname set to http://blwled.local");
+    const char* preferredHostname = "blwled";
+    String hostname = String(appConfig.name);
 
-    } else {
-        // Preferred hostname failed, try the fallback
-        String hostname = String(appConfig.name);
-        Serial.println("Preferred hostname 'blwled' is already in use, trying fallback...");
-        if (MDNS.begin(hostname)) {
+    // Initialize mDNS with the fallback hostname
+    if (!MDNS.begin(appConfig.name)) {
+        logger("E: Failed to start mDNS with fallback hostname!");
+        return;
+    }
+
+    MDNS.addService("http", "tcp", 80);
+    delay(100); // Allow mDNS to stabilize
+
+    // Check if the preferred hostname is available
+    if (static_cast<int>(MDNS.queryHost(preferredHostname)) == 0) {
+        
+        if (MDNS.begin(preferredHostname)) {
             MDNS.addService("http", "tcp", 80);
-            logger("Hostname set to http://" + hostname +".local");
-            
-        } else {
-            logger("E:  Failed to start mDNS with fallback hostname!");
+            hostname = preferredHostname;
+            return;
         }
     }
+
+    logger("Hostname set to http://" + hostname + ".local");
 }
 
 // setup WiFi
