@@ -4,11 +4,11 @@
 extern AppConfig appConfig;
 extern Preferences pref;
 
+static unsigned long lastScanLoopTime = 0;
 static unsigned long lastAttemptTime = 0;
 const unsigned long reconnectInterval = 100;
 
-
-//setup mDNS
+// setup mDNS
 void setupMDNS() {
     const char* preferredHostname = "blwled";
     String hostname = String(appConfig.name);
@@ -20,11 +20,10 @@ void setupMDNS() {
     }
 
     MDNS.addService("http", "tcp", 80);
-    delay(100); // Allow mDNS to stabilize
+    delay(100);  // Allow mDNS to stabilize
 
     // Check if the preferred hostname is available
     if (static_cast<int>(MDNS.queryHost(preferredHostname)) == 0) {
-        
         if (MDNS.begin(preferredHostname)) {
             MDNS.addService("http", "tcp", 80);
             hostname = preferredHostname;
@@ -39,7 +38,7 @@ void setupMDNS() {
 void setupWifi() {
     const char* ssid = "Unbekannt";
     const char* password = "ffYkexQAETVIb";
-    
+
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
@@ -65,7 +64,6 @@ void setupWifi() {
 
 // change current connection for new connection
 int changeWifi(String newSSID, String newPw) {
-    
     WiFiMulti wifiMulti;
     wifiMulti.addAP(newSSID.c_str(), newPw.c_str());
     const unsigned long startTime = millis();
@@ -79,23 +77,61 @@ int changeWifi(String newSSID, String newPw) {
     }
 
     if (wifiMulti.run() == WL_CONNECTED) {
-        logger("\nSuccessfully connected to the new WiFi network!");
+        logger("Successfully connected to the new WiFi network!");
         logger("New IP Address: " + WiFi.localIP().toString());
 
         pref.begin("wifi");
         pref.putString("ssid", newSSID);
         pref.putString("pw", newPw);
         pref.end();
-    
+
         return 1;
     } else {
         return 0;
     }
 }
 
-// scan for Networs
+// scan for networks
 void scanNetworks() {
+    // delay in loop
+    if ((millis() - lastScanLoopTime) < 500) {
+        return;
+    }
 
+    int scanResult = WiFi.scanComplete();
+    if (scanResult == WIFI_SCAN_RUNNING) {
+        lastScanLoopTime = millis();
+        scanNetworks();
+        return;
+    }
+
+    if (scanResult >= 0) {
+        // Send each network found as an event
+        for (int i = 0; i < scanResult; ++i) {
+            String ssid = WiFi.SSID(i);
+            int rssi = WiFi.RSSI(i);
+            String encryptionType = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open" : "Secured";
+
+            String jsonMsg;
+            JsonDocument doc;
+            doc["ssid"] = ssid;
+            doc["rssi"] = rssi;
+            doc["encryption"] = encryptionType;
+            serializeJson(doc, jsonMsg);
+
+            events.send(jsonMsg, "network", millis());
+            delay(10);
+        }
+
+        WiFi.scanDelete();
+        logger("WiFi scan complete");
+    } else if (scanResult == WIFI_SCAN_FAILED) {
+        logger("E:  WiFi scan failed");
+    } else {
+        WiFi.scanNetworks(true); // Start a new scan
+    }
+
+    lastScanLoopTime = millis();
 }
 
 // setup in AP Mode if no WiFi set

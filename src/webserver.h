@@ -429,7 +429,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     }
   });
 
-  server.on("/api/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/wifi/change", HTTP_POST, [](AsyncWebServerRequest *request) {
     String newSSID;
     String newPw;
 
@@ -454,30 +454,18 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     
   });
 
-  server.on("/api/wifi-scan", HTTP_GET, [](AsyncWebServerRequest *request) {
-    int networkCount = WiFi.scanComplete();
-
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    JsonDocument doc;
-
-    if (networkCount == -2) {
-      WiFi.scanNetworks(true);
-      doc["status"] = "scan_in_progress";
-    } else if (networkCount >= 0) {
-      JsonArray networks = doc["networks"].to<JsonArray>();
-
-      for (int i = 0; i < networkCount; ++i) {
-        JsonObject network = networks.add<JsonObject>();
-        network["ssid"] = WiFi.SSID(i);
-        network["rssi"] = WiFi.RSSI(i);
-      }
-      WiFi.scanDelete();
-    } else {
-      doc["status"] = "no_networks";
+  server.on("/api/wifi/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
+    
+    if (WiFi.scanComplete() == WIFI_SCAN_RUNNING) {
+      request->send(400, "text/plain", "Scan already in progress");
+      return;
     }
 
-    serializeJson(doc, *response);
-    request->send(response);
+    // Initiate Wi-Fi scan
+    scanNetworks();
+
+    request->send(200, "text/plain", "Scan started");
+    Serial.println("Wi-Fi scan started");
   });
 }
 
