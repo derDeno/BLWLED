@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 
-#define VERSION_FS "0.1.0"
+#define VERSION_FS "0.1.2"
 
 /**
  * Initialize the filesystem with the version file

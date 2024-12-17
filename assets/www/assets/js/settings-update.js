@@ -1,24 +1,3 @@
-async function uploadOTA() {
-	showOtaProgress();
-
-	const file = document.getElementById("ota-selector").files[0];
-	const formData = new FormData();
-	formData.append("file", file);
-
-	try {
-		const response = await fetch("/api/ota-upload", {
-			method: "POST",
-			body: formData,
-		});
-
-		if (response.ok) {
-			console.log(response.text());
-		}
-	} catch (error) {
-		console.error("Error uploading OTA file: ", error);
-	}
-}
-
 async function showOtaProgress() {
     const modal = new bootstrap.Modal(document.getElementById("modal-ota"));
 	document.getElementById("ota-progress-txt").innerText = "";
@@ -84,7 +63,57 @@ async function showOtaProgress() {
 	}
 }
 
-document.getElementById("ota-upload").addEventListener("click", function (event) {
+
+async function uploadOtaFw() {
+	showOtaProgress();
+
+	const file = document.getElementById("ota-selector-fw").files[0];
+	const formData = new FormData();
+	formData.append("file", file);
+
+	try {
+		const response = await fetch("/api/ota/fw", {
+			method: "POST",
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log(response.text());
+		}
+	} catch (error) {
+		console.error("Error uploading OTA FW file: ", error);
+	}
+}
+
+document.getElementById("ota-upload-fw").addEventListener("click", function (event) {
 	event.preventDefault();
-	uploadOTA();
+	uploadOtaFw();
+});
+
+
+
+async function uploadOtaFs() {
+	showOtaProgress();
+
+	const file = document.getElementById("ota-selector-fs").files[0];
+	const formData = new FormData();
+	formData.append("file", file);
+
+	try {
+		const response = await fetch("/api/ota/fs", {
+			method: "POST",
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log(response.text());
+		}
+	} catch (error) {
+		console.error("Error uploading OTA FS file: ", error);
+	}
+}
+
+document.getElementById("ota-upload-fs").addEventListener("click", function (event) {
+	event.preventDefault();
+	uploadOtaFs();
 });

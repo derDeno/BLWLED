@@ -91,6 +91,7 @@ String processorLogs(const String &var) {
 }
 
 
+
 void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
     request->_tempFile = LittleFS.open("/" + filename, "w", true);
@@ -175,11 +176,11 @@ void handleUploadRestore(AsyncWebServerRequest *request, String filename, size_t
 }
 
 
-void handleUploadOTA(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
+void handleOtaFw(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
   static size_t totalSize = 0;
   
   if (index == 0) {
-    logger("W:  OTA update Start: " + filename);
+    logger("W:  OTA Firmware update start: " + filename);
 
     if (!Update.begin(request->contentLength())) {
       Update.printError(Serial);
@@ -196,14 +197,14 @@ void handleUploadOTA(AsyncWebServerRequest *request, const String& filename, siz
     } else {
       totalSize += len;
       int progress = (totalSize * 100) / request->contentLength();
-      Serial.println("OTA Progress: " + String(progress) + "%");
+      Serial.println("OTA Firmware progress: " + String(progress) + "%");
       events.send(String(progress).c_str(), "ota-progress", millis());
     }
   }
 
   if (final) {
     if (Update.end(true)) {
-      String msg = "Update Success: " + String(index + len) + "bytes written";
+      String msg = "Firmware update success: " + String(index + len) + "bytes written";
       logger(msg);
       events.send("100", "ota-progress", millis());
 
@@ -213,6 +214,47 @@ void handleUploadOTA(AsyncWebServerRequest *request, const String& filename, siz
     }
   }
 }
+
+
+void handleOtaFs(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
+  static size_t totalSize = 0;
+  
+  if (index == 0) {
+    logger("W:  OTA Filesystem update start: " + filename);
+
+    if (!Update.begin(request->contentLength(), U_SPIFFS)) {
+      Update.printError(Serial);
+      return;
+    }
+
+    totalSize = 0;
+  }
+
+  if (!Update.hasError() && len > 0) {
+    if (Update.write(data, len) != len) {
+      Update.printError(Serial);
+
+    } else {
+      totalSize += len;
+      int progress = (totalSize * 100) / request->contentLength();
+      Serial.println("OTA Filesystem progress: " + String(progress) + "%");
+      events.send(String(progress).c_str(), "ota-progress", millis());
+    }
+  }
+
+  if (final) {
+    if (Update.end(true)) {
+      String msg = "Filesystem update success: " + String(index + len) + "bytes written";
+      logger(msg);
+      events.send("100", "ota-progress", millis());
+
+    } else {
+      Update.printError(Serial);
+      events.send("error", "ota-progress", millis());
+    }
+  }
+}
+
 
 
 void setupStaticRoutes(AsyncWebServer &server) {
@@ -555,7 +597,7 @@ void setupMappingRoutes(AsyncWebServer &server) {
 
 
 void setupFileRoutes(AsyncWebServer &server) {
-  server.on("/api/backup-download", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/backup", HTTP_GET, [](AsyncWebServerRequest *request) {
     // wifi settings
     pref.begin("wifi", true);
     bool setup = pref.getBool("setup", false);
@@ -593,19 +635,19 @@ void setupFileRoutes(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/backup-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
+  server.on("/api/backup", HTTP_POST, [](AsyncWebServerRequest *request) { 
     request->send(200); 
   }, handleUploadRestore); 
 
-  server.on("/api/ota-upload", HTTP_POST, [](AsyncWebServerRequest *request) { 
+  server.on("/api/ota/fw", HTTP_POST, [](AsyncWebServerRequest *request) { 
     if(Update.hasError()) {
-        request->send(500, "text/plain", "OTA Update Failed! Check Logs for details.");
+        request->send(500, "text/plain", "OTA Firmware update failed! Check Logs for details.");
 
       }else {
 
-        logger("OTA Update complete, rebooting...");
+        logger("OTA Firmware update complete, rebooting...");
 
-        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OTA Update Successful! Rebooting...");
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OTA Firmware update successful! Rebooting...");
         response->addHeader("Connection", "close");
         request->send(response);
 
@@ -614,8 +656,26 @@ void setupFileRoutes(AsyncWebServer &server) {
           ESP.restart();
         });
       }
-  }, handleUploadOTA);
+  }, handleOtaFw);
   
+  server.on("/api/ota/fs", HTTP_POST, [](AsyncWebServerRequest *request) { 
+    if(Update.hasError()) {
+        request->send(500, "text/plain", "OTA Filesystem update failed! Check Logs for details.");
+
+      }else {
+
+        logger("OTA Filesystem update complete, rebooting...");
+
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OTA Filesystem update successful! Rebooting...");
+        response->addHeader("Connection", "close");
+        request->send(response);
+
+        request->onDisconnect([]() {
+          delay(2000);
+          ESP.restart();
+        });
+      }
+  }, handleOtaFs);
 }
 
 
@@ -628,6 +688,7 @@ void setupApiRoutes(AsyncWebServer &server) {
     doc["hostname"] = WiFi.getHostname();
     doc["rssi"] = WiFi.RSSI();
     doc["version"] = appConfig.version;
+    doc["version_fs"] = appConfig.versionFs;
     doc["uptime"] = millis();
     serializeJson(doc, *response);
     request->send(response);

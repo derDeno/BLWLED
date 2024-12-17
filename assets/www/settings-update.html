@@ -32,18 +32,30 @@
         <!-- Start: ota -->
         <div class="card" style="margin-bottom: 10px;">
             <div class="card-body">
-                <h4 class="card-title">Firmware Update</h4>
-                <p class="card-text">Upload an OTA update <em>.bin</em> file</p>
-                <form id="form-ota">
-                    <div class="input-group"><input class="form-control" type="file" id="ota-selector" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload" type="button">Update</button></div>
-                </form>
+                <h4 class="card-title">OTA Update</h4>
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col">
+                        <p style="margin-bottom: 5px;">Upload an&nbsp;<em>firmware.bin</em> file</p>
+                        <form id="form-ota-fw">
+                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fw" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload-fw" type="button">Update</button></div>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <p style="margin-bottom: 5px;">Upload an&nbsp;<em>filesystem.bin</em> file</p>
+                        <form id="form-ota-fs">
+                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fs" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload-fs" type="button">Update</button></div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div><!-- End: ota -->
         <!-- Start: backup -->
         <div class="card" style="margin-bottom: 10px;">
             <div class="card-body">
                 <h4 class="card-title">Backup</h4>
-                <p class="card-text">Download your settings file</p><a class="btn btn-primary" role="button" id="btn-backup-settings" href="/api/backup-download">Download Backup file</a>
+                <p class="card-text">Download your settings file</p><a class="btn btn-primary" role="button" id="btn-backup-settings" href="/api/backup" target="_blank">Download Backup file</a>
             </div>
         </div><!-- End: backup -->
         <!-- Start: restore -->
@@ -51,7 +63,7 @@
             <div class="card-body">
                 <h4 class="card-title">Restore</h4>
                 <p class="card-text">Restore your settings by uploading your <em>.blwled</em> file</p>
-                <form id="form-restore-settings" style="margin-top: 10px;" method="post" action="/api/backup-upload">
+                <form id="form-restore-settings" style="margin-top: 10px;" method="post" action="/api/backup">
                     <div class="input-group"><input class="form-control" type="file" id="restore-selector" accept=".blwled" name="restore-file"><button class="btn btn-success" id="restore-upload" type="submit">Restore</button></div>
                 </form>
             </div>

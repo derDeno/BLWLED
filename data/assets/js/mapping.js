@@ -384,6 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			const releaseData = await response.json();
 			const latestVersion = releaseData.tag_name.replace(/^v/, ""); // Remove "v" if present
 
+			console.log(isNewerVersion(latestVersion, currentVersion));
 			if (isNewerVersion(latestVersion, currentVersion)) {
 				console.log(`A newer version is available: ${latestVersion}`);
 				document.getElementById("alert-update").style.display = "block";
