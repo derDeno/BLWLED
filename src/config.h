@@ -15,7 +15,7 @@
 
 // Default Pref values
 #define PREF_WLED true
-#define PREF_COUNT 10
+#define PREF_COUNT 79
 #define PREF_ORDER "grb"
 #define PREF_ANALOG false
 #define PREF_MODE 1
@@ -23,7 +23,7 @@
 #define PREF_ACTION 1
 #define PREF_LOGGING false
 #define PREF_RTID true
-#define PREF_RTSB 10
+#define PREF_RTSB 600
 
 // Dev defaults
 #define PREF_IP "192.168.1.211"
