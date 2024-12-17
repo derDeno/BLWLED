@@ -2,6 +2,7 @@
 .vscode
 build
 assets/wwww
+assets/www/
 assets/backup.blwled
 assets/temp icon.ai
 .DS_Store
