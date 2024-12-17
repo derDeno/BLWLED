@@ -34,33 +34,47 @@ def build_filesystem_image(source, target, env):
 # Combine firmware and filesystem images
 def combine_firmware_and_fs(source, target, env):
     print("[INFO] Combining firmware and filesystem images...")
-    build_dir = env.subst("$BUILD_DIR")
-    firmware_path = os.path.join(build_dir, "firmware.bin")
-    fs_path = os.path.join(build_dir, "littlefs.bin")
-    output_path = os.path.join(build_dir, firmware_name)
+    build_dir = env.subst("$BUILD_DIR").replace("\\", "/")
+    firmware_path = os.path.join(build_dir, "firmware.bin").replace("\\", "/")
+    fs_path = os.path.join(build_dir, "littlefs.bin").replace("\\", "/")
+    output_path = os.path.join(build_dir, f"firmware-{version}.bin").replace("\\", "/")
 
-    # Verify that both input files exist
-    if not os.path.exists(firmware_path):
+    # Verify both input files exist
+    if not os.path.isfile(firmware_path):
         print(f"[ERROR] Firmware file not found: {firmware_path}")
         return
-    if not os.path.exists(fs_path):
+    if not os.path.isfile(fs_path):
         print(f"[ERROR] Filesystem image not found: {fs_path}")
         return
 
-    # Use esptool to combine the binaries
+    # Command to combine binaries
+    command = [
+        "esptool.py", "--chip", "esp32", "merge_bin",
+        "-o", output_path,
+        "--flash_mode", "dio", "--flash_freq", "40m", "--flash_size", "8MB",
+        "0x10000", firmware_path,
+        "0x290000", fs_path
+    ]
+
+    print(f"[INFO] Executing: {' '.join(command)}")
+
     try:
-        command = f'esptool.py --chip esp32 merge_bin -o "{output_path}" \
-                   --flash_mode dio --flash_freq 40m --flash_size 8MB \
-                   0x10000 "{firmware_path}" \
-                   0x290000 "{fs_path}"'
-        print(f"[INFO] Executing: {command}")
-        result = os.system(command)
-        if result == 0:
+        result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print("[INFO] esptool.py Output:")
+        print(result.stdout)
+        if result.stderr:
+            print("[ERROR] esptool.py Error:")
+            print(result.stderr)
+
+        # Verify output file
+        if os.path.isfile(output_path):
             print(f"[INFO] Combined firmware created successfully: {output_path}")
         else:
-            print(f"[ERROR] Failed to combine binaries.")
-    except Exception as e:
-        print(f"[ERROR] Exception during binary combination: {str(e)}")
+            print(f"[ERROR] Combined firmware not found: {output_path}")
+
+    except subprocess.CalledProcessError as e:
+        print("[ERROR] esptool execution failed:")
+        print(e.stderr)
 
 # Hook into the build process
 env.AddPreAction("buildprog", build_filesystem_image)
