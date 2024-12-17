@@ -5,8 +5,6 @@ extern AsyncEventSource events;
 extern Preferences pref;
 extern AppConfig appConfig;
 
-uint8_t otaDone = 0;
-
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -23,6 +21,9 @@ String processorInfo(const String &var) {
 
   } else if (var == "TEMPLATE_VERSION") {
     return F(appConfig.version);
+
+  } else if (var == "TEMPLATE_VERSION_FS") {
+    return F(appConfig.versionFs);
 
   } else if (var == "TEMPLATE_UPTIME") {
     unsigned long uptimeMillis = millis();

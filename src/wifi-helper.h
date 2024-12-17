@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include <ESPmDNS.h>
+#include <ArduinoJson.h>
 
 extern AppConfig appConfig;
+extern AsyncEventSource events;
 extern Preferences pref;
 
 static unsigned long lastScanLoopTime = 0;

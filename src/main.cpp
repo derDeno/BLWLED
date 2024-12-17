@@ -6,6 +6,7 @@
 #include <WiFiMulti.h>
 #include <time.h>
 
+#include "fs-helper.h"
 #include "config.h"
 #include "log.h"
 #include "wifi-helper.h"
@@ -30,6 +31,12 @@ unsigned const long debounceDelay = 1000;
 
 
 void initState() {
+    
+    // FS Version
+    char versionBuffer[13];
+    readFsVersion(versionBuffer, sizeof(versionBuffer));
+    strcpy(appConfig.versionFs, versionBuffer);
+
     pref.begin("deviceSettings");
 
     // set the board name (aka hostname) using 3 mac bytes
@@ -75,19 +82,14 @@ void setup() {
     Serial.begin(74880);
 
     // Initialize LittleFS
-    if (!LittleFS.begin()) {
-        Serial.println("An Error has occurred while mounting LittleFS");
-        return;
-    }
-    logger("=============================");
-    logger("LittleFS mounted successfully");
+    initFs();
 
     // Initialize application state
     initState();
     setupWled();
 
     if (!appConfig.wifiSet) {
-        logger("WiFi not setup yet, starting AP");
+        logger("WiFi not setup yet, starting AP Mode");
         setupWifiAp();
     } else {
         setupWifi();

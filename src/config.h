@@ -38,7 +38,7 @@
 struct AppConfig {
     
     // Constructor set defaults
-    AppConfig() : version(VERSION), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtsb(10), wifiSet(false), printerSet(false) {
+    AppConfig() : version(VERSION), versionFs("n/a"), name("BLWLED"), wled(false), count(0), analog(false), mode(1), sw(true), action(1), logging(false), rtid(true), rtsb(10), wifiSet(false), printerSet(false) {
         strcpy(order, "");
         strcpy(ip, "");
         strcpy(ac, "");
@@ -48,7 +48,8 @@ struct AppConfig {
     }
 
     // system
-    const char version[13];
+    const char version[13];     // version of the firmware
+    char versionFs[13];   // version of the filesystem
     char name[14];
 
     // device states

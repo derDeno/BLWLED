@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <LittleFS.h>
 
 struct tm timeinfo;
 const size_t MAX_LOG_FILE_SIZE = 50 * 1024;  // 50 KB
