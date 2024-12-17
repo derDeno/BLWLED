@@ -1,10 +1,9 @@
 .pio
 .vscode
-.build/*
+build
 assets/wwww
 assets/backup.blwled
 assets/temp icon.ai
 .DS_Store
 compile_commands.json
-.build
 post_merge.py
