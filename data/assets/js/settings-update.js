@@ -49,18 +49,22 @@ async function showOtaProgress() {
 				document.querySelector(".progress-bar").classList.remove("progress-bar-striped");
 				document.querySelector(".progress-bar").classList.remove("progress-bar-animated");
 
-				modal.hide();
-
-				// show fail modal
-				const modalFail = new bootstrap.Modal(document.getElementById("modal-ota-failed"));
-				modalFail.show();
-
-				setTimeout(() => {
-					window.location.reload();
-				}, 8000);
+				showErrorModal();
 			}
 		}, false);
 	}
+}
+
+function showErrorModal() {
+	const modal = new bootstrap.Modal(document.getElementById("modal-ota"));
+	modal.hide();
+
+	const modalFail = new bootstrap.Modal(document.getElementById("modal-ota-failed"));
+	modalFail.show();
+
+	setTimeout(() => {
+		window.location.reload();
+	}, 8000);
 }
 
 
@@ -79,6 +83,9 @@ async function uploadOtaFw() {
 
 		if (response.ok) {
 			console.log(response.text());
+		}else {
+			console.error("Error uploading OTA FW file: ", response);
+			showErrorModal();
 		}
 	} catch (error) {
 		console.error("Error uploading OTA FW file: ", error);
@@ -107,6 +114,9 @@ async function uploadOtaFs() {
 
 		if (response.ok) {
 			console.log(response.text());
+		}else {
+			console.error("Error uploading OTA FS file: ", response);
+			showErrorModal();
 		}
 	} catch (error) {
 		console.error("Error uploading OTA FS file: ", error);

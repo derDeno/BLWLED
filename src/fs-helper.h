@@ -1,16 +1,6 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 
-#define VERSION_FS "0.1.2"
-
-/**
- * Initialize the filesystem with the version file
- */
-void initializeFilesystem() {
-    File versionFile = LittleFS.open("/version.txt", "w");
-    versionFile.print(VERSION_FS);
-    versionFile.close();
-}
 
 /**
  * Read the version from the filesystem
@@ -46,11 +36,9 @@ void initFs() {
     if (!LittleFS.begin()) {
         Serial.println("LittleFS mount failed, formatting...");
         LittleFS.format();
-        initializeFilesystem();
 
     } else if (!LittleFS.exists("/version.txt")) {
-        Serial.println("Version file missing, initializing filesystem...");
-        initializeFilesystem();
+        Serial.println("Version file missing");
 
     } else {
         Serial.println("Filesystem mounted.");

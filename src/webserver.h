@@ -222,7 +222,7 @@ void handleOtaFs(AsyncWebServerRequest *request, const String& filename, size_t 
   if (index == 0) {
     logger("W:  OTA Filesystem update start: " + filename);
 
-    if (!Update.begin(request->contentLength(), U_SPIFFS)) {
+    if (!Update.begin(0x200000, U_SPIFFS)) {
       Update.printError(Serial);
       return;
     }
