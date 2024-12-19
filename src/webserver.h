@@ -301,7 +301,7 @@ void setupStaticRoutes(AsyncWebServer &server) {
 
 
 void setupSettingsRoutes(AsyncWebServer &server) {
-  server.on("/api/settings-device", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/settings/device", HTTP_GET, [](AsyncWebServerRequest *request) {
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
     doc["wled"] = appConfig.wled;
@@ -316,7 +316,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/settings-device", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/settings/device", HTTP_POST, [](AsyncWebServerRequest *request) {
     pref.begin("deviceSettings");
     
     if (request->hasParam("wled", true)) {
@@ -401,7 +401,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     //ESP.restart();
   });
 
-  server.on("/api/settings-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/settings/printer", HTTP_GET, [](AsyncWebServerRequest *request) {
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument doc;
     doc["printerIp"] = appConfig.ip;
@@ -414,7 +414,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     request->send(response);
   });
 
-  server.on("/api/settings-printer", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/api/settings/printer", HTTP_POST, [](AsyncWebServerRequest *request) {
     pref.begin("printerSettings");
     
     if (request->hasParam("ip", true)) {
@@ -456,7 +456,7 @@ void setupSettingsRoutes(AsyncWebServer &server) {
     });
   });
 
-  server.on("/api/test-printer", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/api/test/printer", HTTP_GET, [](AsyncWebServerRequest *request) {
     
     // check if already connected
     bool connected = mqttClient.connected();
@@ -499,16 +499,17 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
   server.on("/api/wifi/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
     
-    if (WiFi.scanComplete() == WIFI_SCAN_RUNNING) {
-      request->send(400, "text/plain", "Scan already in progress");
+    bool scanState = startNetworkScan();
+
+    if(!scanState) {
+      request->send(200, "application/json", "{\"status\":\"Scan already in progress\"}");
       return;
     }
 
-    // Initiate Wi-Fi scan
-    scanNetworks();
-
-    request->send(200, "text/plain", "Scan started");
+    request->send(200, "application/json", "{\"status\":\"Scan started\"}");
     Serial.println("Wi-Fi scan started");
+
+    
   });
 }
 

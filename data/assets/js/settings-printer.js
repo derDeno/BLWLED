@@ -1,7 +1,7 @@
 // Function to load saved printer settings from the API and populate the form
 async function loadPrinterSettings() {
     try {
-        const response = await fetch('/api/settings-printer');
+        const response = await fetch('/api/settings/printer');
         if (response.ok) {
             const settings = await response.json();
             document.getElementById('settings-printer-ip').value = settings.printerIp || '';
@@ -34,7 +34,7 @@ async function savePrinterSettings() {
     formData.append('rtsb', returnStandByTime);
 
     try {
-        const response = await fetch('/api/settings-printer', {
+        const response = await fetch('/api/settings/printer', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -67,7 +67,7 @@ async function showTestConnectionModal() {
 
     // run connection test
     try {
-        const response = await fetch('/api/test-printer');
+        const response = await fetch('/api/test/printer');
         if (response.ok) {
             const res = await response.json();
 

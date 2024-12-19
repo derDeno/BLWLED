@@ -1,6 +1,6 @@
 async function loadDeviceSettings() {
 	try {
-		const response = await fetch("/api/settings-device");
+		const response = await fetch("/api/settings/device");
 		if (response.ok) {
 			const settings = await response.json();
 			document.getElementById("wled-activate").checked = settings.wled;
@@ -45,7 +45,7 @@ async function saveDeviceSettings() {
 	formData.append("logging", loggingActivate);
 
 	try {
-		const response = await fetch("/api/settings-device", {
+		const response = await fetch("/api/settings/device", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",

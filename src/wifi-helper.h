@@ -6,9 +6,13 @@ extern AppConfig appConfig;
 extern AsyncEventSource events;
 extern Preferences pref;
 
-static unsigned long lastScanLoopTime = 0;
+
 static unsigned long lastAttemptTime = 0;
 const unsigned long reconnectInterval = 100;
+
+unsigned long lastScanTime = 0;
+bool isScanning = false;
+
 
 // setup mDNS
 void setupMDNS() {
@@ -94,19 +98,23 @@ int changeWifi(String newSSID, String newPw) {
 }
 
 // scan for networks
-void scanNetworks() {
-    // delay in loop
-    if ((millis() - lastScanLoopTime) < 500) {
+void scanNetworkLoop() {
+    if (!isScanning) {
+        return;
+    }
+
+    // Check if enough time has passed for the scan
+    if (millis() - lastScanTime < 500) {
         return;
     }
 
     int scanResult = WiFi.scanComplete();
     if (scanResult == WIFI_SCAN_RUNNING) {
-        lastScanLoopTime = millis();
-        scanNetworks();
-        return;
+        lastScanTime = millis();
+        return; // Continue waiting for the scan to complete
     }
 
+    // Scan completed
     if (scanResult >= 0) {
         // Send each network found as an event
         for (int i = 0; i < scanResult; ++i) {
@@ -114,27 +122,41 @@ void scanNetworks() {
             int rssi = WiFi.RSSI(i);
             String encryptionType = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open" : "Secured";
 
-            String jsonMsg;
+            String jsonMessage;
             JsonDocument doc;
             doc["ssid"] = ssid;
             doc["rssi"] = rssi;
             doc["encryption"] = encryptionType;
-            serializeJson(doc, jsonMsg);
+            serializeJson(doc, jsonMessage);
 
-            events.send(jsonMsg, "network", millis());
+            events.send(jsonMessage.c_str(), "network", millis());
             delay(10);
         }
 
         WiFi.scanDelete();
-        logger("WiFi scan complete");
+        Serial.println("Wi-Fi scan complete");
     } else if (scanResult == WIFI_SCAN_FAILED) {
-        logger("E:  WiFi scan failed");
-    } else {
-        WiFi.scanNetworks(true); // Start a new scan
+        Serial.println("Wi-Fi scan failed");
     }
 
-    lastScanLoopTime = millis();
+    // Reset scanning state
+    isScanning = false;
 }
+
+
+bool startNetworkScan() {
+    if (isScanning) {
+        return false;
+    }
+
+    WiFi.scanNetworks(true);
+    isScanning = true;
+    lastScanTime = millis();
+
+    return true;
+}
+
+
 
 // setup in AP Mode if no WiFi set
 void setupWifiAp() {
@@ -143,6 +165,8 @@ void setupWifiAp() {
 
 // loop for WiFi
 void wifiLoop() {
+
+    // check wifi connection
     if (WiFi.status() != WL_CONNECTED) {
         if (millis() - lastAttemptTime > reconnectInterval) {
             lastAttemptTime = millis();
@@ -151,4 +175,8 @@ void wifiLoop() {
             WiFi.reconnect();
         }
     }
+
+
+    // wifi scan loop
+    scanNetworkLoop();
 }
