@@ -10,7 +10,7 @@ async function showOtaProgress() {
 	modal.show();
 
 	if (!!window.EventSource) {
-		var source = new EventSource("/events");
+		var source = new EventSource("/api/events");
 
 		source.addEventListener('open', function(e) {
 			console.log("Events Connected");

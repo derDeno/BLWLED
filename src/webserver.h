@@ -791,7 +791,7 @@ void notFound(AsyncWebServerRequest *request) {
 // Routing here
 void routing(AsyncWebServer &server) {
 
-  server.addHandler(&events);
+  //server.addHandler(&events);
 
   setupStaticRoutes(server);
   setupMappingRoutes(server);

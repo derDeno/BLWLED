@@ -42,15 +42,13 @@ void setupMDNS() {
 
 // setup WiFi
 void setupWifi() {
-    const char* ssid = "Unbekannt";
-    const char* password = "ffYkexQAETVIb";
 
     // Connect to Wi-Fi network
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setSleep(false);
     WiFi.setHostname(appConfig.name);
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    WiFi.begin(appConfig.ssid, appConfig.pass);
     logger("Connecting to WiFi...");
 
     // Wait for connection
@@ -64,8 +62,9 @@ void setupWifi() {
 
     // NTP
     configTime(0, 0, "pool.ntp.org");
-    logger("NTP time is synchronized. Time is in UTC");
-    logger("Connected to WiFi network with IP Address: " + WiFi.localIP().toString());
+    logger("NTP (UTC):              ok");
+    logger("WiFI:                   ok");
+    logger("IP: " + WiFi.localIP().toString());
 }
 
 // change current connection for new connection

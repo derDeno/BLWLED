@@ -19,7 +19,7 @@
 
 AppConfig appConfig;
 AsyncWebServer server(80);
-AsyncEventSource events("/events");
+AsyncEventSource events("/api/events");
 Preferences pref;
 CRGB* leds;
 
@@ -86,6 +86,8 @@ void setup() {
 
     // Initialize application state
     initState();
+
+    // Initialize LED strip
     setupWled();
 
     if (!appConfig.wifiSet) {
@@ -107,13 +109,14 @@ void setup() {
     // setup events
     events.onConnect([](AsyncEventSourceClient *client) {
         client->send("hello!", NULL, millis(), 1000);
+        logger("Server Sent Events:     ok");
     });
 
     // Start server
     routing(server);
     server.addHandler(&events);
     server.begin();
-    logger("HTTP server started");
+    logger("HTTP server:            ok");
     logger(String(appConfig.name) + " is ready!");
 
     startupAnimation();

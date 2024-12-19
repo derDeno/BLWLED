@@ -2,7 +2,7 @@
 #include <FastLED.h>
 
 // System Defenition
-#define VERSION "0.1.3"
+#define VERSION "0.1.4"
 
 // Pins Defenition
 #define WLED_PIN 18
