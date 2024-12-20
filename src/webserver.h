@@ -7,6 +7,7 @@ extern AppConfig appConfig;
 
 String newSSID;
 String newPw;
+String newBSSID;
 
 
 String processorInfo(const String &var) {
@@ -485,6 +486,10 @@ void setupSettingsRoutes(AsyncWebServer &server) {
 
     if (request->hasParam("pw", true)) {
         newPw = request->getParam("pw", true)->value();
+    }
+
+    if (request->hasParam("bssid", true)) {
+        newBSSID = request->getParam("bssid", true)->value();
     }
 
     // Create the response

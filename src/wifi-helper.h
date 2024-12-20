@@ -3,8 +3,10 @@
 #include <WiFiMulti.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
+#include <esp_task_wdt.h>
 
 extern AppConfig appConfig;
+extern AsyncWebServer server;
 extern AsyncEventSource events;
 extern Preferences pref;
 extern PubSubClient mqttClient;
@@ -76,59 +78,51 @@ void changeWifi(String newSSID, String newPw) {
 
     // set the flag to prevent reconnecting
     blockWifi = true;
-    bool newNetworkSuccess = false;
 
-    WiFiMulti wifiMulti;
-    wifiMulti.addAP(newSSID.c_str(), newPw.c_str());
     const unsigned long startTime = millis();
-    unsigned long timeout = 10000;
+    unsigned long timeout = 5000;
 
-    // test new connection
+    // disconnect mqtt, events and wifi
     if (mqttClient.connected()) {
         mqttClient.disconnect();
         delay(500);
     }
+
+    events.close();
+    delay(500);
     WiFi.disconnect();
     delay(1000);
-    WiFi.mode(WIFI_STA);
 
     Serial.printf("Free heap before connection: %d bytes\n", ESP.getFreeHeap());
+    WiFi.begin(newSSID, newPw);
 
-    while (millis() - startTime < timeout) {
-        Serial.println("DEBUG 1");
-        int wifiStatus = wifiMulti.run();
-        Serial.println("DEBUG 2");
-
-        if (wifiStatus == WL_CONNECTED) {
-            Serial.println("DEBUG 5");
-            newNetworkSuccess = true;
-            break;
-        } else if (wifiStatus == WL_CONNECT_FAILED) {
-            Serial.println("DEBUG 6");
-            Serial.println("Connection failed: Incorrect password or SSID.");
-            break;
-        } else if (wifiStatus == WL_NO_SHIELD) {
-            Serial.println("DEBUG 4");
-            Serial.println("WiFi shield not initialized.");
-            break;
-        } else {
-            Serial.println("DEBUG 7");
+    unsigned long lastCheck = millis();
+    while (WiFi.status() != WL_CONNECTED && (millis() - startTime < timeout)) {
+        if (millis() - lastCheck > 500) { // Check every 500ms
+            lastCheck = millis();
+            Serial.println("Waiting for WiFi...");
         }
-
-        delay(500);
-        yield(); 
+        esp_task_wdt_reset();
+        delay(1);
     }
 
-    if (newNetworkSuccess) {
+    Serial.print(WiFi.status());
+
+    if (WiFi.status() == WL_CONNECTED) {
         logger("Successfully connected to the new WiFi network!");
         logger("New IP Address: " + WiFi.localIP().toString());
 
         WiFi.disconnect();
-        delay(500);
+        delay(1000);
         setupWifi();
 
         blockWifi = false;
-        events.send("success", "network-switch", millis());
+
+        events.onConnect([](AsyncEventSourceClient *client) {
+            logger("SSE: Client reconnected");
+            events.send("success", "network-switch", millis());
+        });
+        
 
         pref.begin("wifi");
         pref.putString("ssid", newSSID);
@@ -143,10 +137,16 @@ void changeWifi(String newSSID, String newPw) {
 
         WiFi.disconnect();
         delay(500);
+
         setupWifi();
 
-        blockWifi = false;
-        events.send("failed", "network-switch", millis());
+        events.onConnect([](AsyncEventSourceClient *client) {
+            logger("SSE: Client reconnected");
+            esp_task_wdt_reset();
+            events.send("failed", "network-switch", millis());
+            delay(1000);
+            blockWifi = false;
+        });
     }
 }
 
@@ -173,15 +173,13 @@ void scanNetworkLoop() {
 
         // Send each network found as an event
         for (int i = 0; i < scanResult; ++i) {
-            String ssid = WiFi.SSID(i);
-            int rssi = WiFi.RSSI(i);
-            String encryptionType = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open" : "Secured";
 
             String jsonMessage;
             JsonDocument doc;
-            doc["ssid"] = ssid;
-            doc["rssi"] = rssi;
-            doc["encryption"] = encryptionType;
+            doc["ssid"] = WiFi.SSID(i);
+            doc["rssi"] = WiFi.RSSI(i);
+            doc["bssid"] = WiFi.BSSIDstr(i);
+            doc["encryption"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open" : "Secured";
             serializeJson(doc, jsonMessage);
 
             events.send(jsonMessage.c_str(), "network", millis());

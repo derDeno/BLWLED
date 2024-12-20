@@ -110,7 +110,7 @@ void setup() {
     // setup events
     events.onConnect([](AsyncEventSourceClient *client) {
         client->send("hello!", NULL, millis(), 1000);
-        logger("Server Sent Events: ok");
+        logger("SSE: Client connected");
     });
 
     // Start server
