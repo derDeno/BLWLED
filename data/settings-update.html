@@ -37,7 +37,7 @@
                     <div class="col">
                         <p style="margin-bottom: 5px;">Upload an&nbsp;<em>firmware.bin</em> file</p>
                         <form id="form-ota-fw">
-                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fw" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload-fw" type="button">Update</button></div>
+                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fw" accept=".bin" name="ota" required=""><button class="btn btn-primary" id="ota-upload-fw" type="submit">Update</button></div>
                         </form>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                     <div class="col">
                         <p style="margin-bottom: 5px;">Upload an&nbsp;<em>filesystem.bin</em> file</p>
                         <form id="form-ota-fs">
-                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fs" accept=".bin" name="ota"><button class="btn btn-primary" id="ota-upload-fs" type="button">Update</button></div>
+                            <div class="input-group"><input class="form-control" type="file" id="ota-selector-fs" name="ota" required=""><button class="btn btn-primary" id="ota-upload-fs" type="submit">Update</button></div>
                         </form>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                 <h4 class="card-title">Restore</h4>
                 <p class="card-text">Restore your settings by uploading your <em>.blwled</em> file</p>
                 <form id="form-restore-settings" style="margin-top: 10px;" method="post" action="/api/backup">
-                    <div class="input-group"><input class="form-control" type="file" id="restore-selector" accept=".blwled" name="restore-file"><button class="btn btn-success" id="restore-upload" type="submit">Restore</button></div>
+                    <div class="input-group"><input class="form-control" type="file" id="restore-selector" name="restore-file" required=""><button class="btn btn-success" id="restore-upload" type="submit">Restore</button></div>
                 </form>
             </div>
         </div><!-- End: restore -->

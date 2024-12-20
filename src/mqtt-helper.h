@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
-#include <PubSubClient.h>
 
 extern AppConfig appConfig;
 

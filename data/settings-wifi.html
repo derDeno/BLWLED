@@ -40,25 +40,9 @@
                         <h5>Found Networks</h5><!-- Start: Networks List -->
                         <ul class="list-group" id="network-group">
                             <li class="list-group-item" id="network-item-1"><span>WiFi #1</span></li>
-                            <li class="list-group-item" id="network-item-other"><span>Other Network</span></li>
                         </ul><!-- End: Networks List -->
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" role="dialog" tabindex="-1" id="modal-connect">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Verifying connection</h4>
-                </div>
-                <div class="modal-body">
-                    <p id="msg-check-connection">Checking connection, please wait...</p>
-                    <p id="msg-connection-fail"><strong><span style="color: rgb(255, 0, 0);">Connection failed!</span></strong></p>
-                    <p id="msg-connection-success"><strong><span style="color: rgb(0, 157, 0);">Connection successfuly! Rebooting now...</span></strong></p>
-                </div>
-                <div class="modal-footer"><button class="btn btn-secondary" id="btn-cancel" type="button" data-bs-dismiss="modal">Cancel</button></div>
             </div>
         </div>
     </div>
@@ -72,6 +56,39 @@
                     <form id="form-network"><label class="form-label">Network name (SSID)</label><input class="form-control" type="text" id="network-ssid"><label class="form-label" style="margin-top: 15px;">Network password</label><input class="form-control" type="password" id="network-passphrase"></form>
                 </div>
                 <div class="modal-footer"><button class="btn btn-primary" id="network-connect" type="submit">Save &amp; Connect</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="modal-network-failed">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header"><button class="btn-close" id="btn-modal-details-close-1" type="button" aria-label="Close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body" style="text-align: center;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" class="bi bi-patch-exclamation-fll text-center text-danger" style="font-size: 100px;margin-bottom: 10px;">
+                        <path fill-rule="evenodd" d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.553.553 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"></path>
+                    </svg>
+                    <h3>Connection failed!</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" data-bs-backdrop="static" id="modal-network-connect">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body" style="text-align: center;"><span class="spinner-border text-primary" role="status" style="width: 100px;height: 100px;"></span>
+                    <h3>Checking Connection</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" data-bs-backdrop="static" id="modal-network-success">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body" style="text-align: center;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-patch-check-fill text-center text-success" style="font-size: 100px;margin-bottom: 10px;">
+                        <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708z"></path>
+                    </svg>
+                    <h3>Connection Successfully</h3>
+                    <p>Will reboot now ...</p>
+                </div>
             </div>
         </div>
     </div>

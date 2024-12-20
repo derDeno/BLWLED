@@ -5,6 +5,9 @@ extern AsyncEventSource events;
 extern Preferences pref;
 extern AppConfig appConfig;
 
+String newSSID;
+String newPw;
+
 
 String processorInfo(const String &var) {
   if (var == "TEMPLATE_MAC") {
@@ -473,28 +476,26 @@ void setupSettingsRoutes(AsyncWebServer &server) {
   });
 
   server.on("/api/wifi/change", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String newSSID;
-    String newPw;
+
+    logger("WiFI switch initiated.");
 
     if (request->hasParam("ssid", true)) {
-      newSSID = request->getParam("ssid", true)->value();
+        newSSID = request->getParam("ssid", true)->value();
     }
 
     if (request->hasParam("pw", true)) {
-      newPw = request->getParam("pw", true)->value();
+        newPw = request->getParam("pw", true)->value();
     }
 
-    if( changeWifi(newSSID, newPw) == 1) {
-      request->send(200, "application/json", "{\"status\":\"success\"}");
-      delay(2000);
-      ESP.restart();
+    // Create the response
+    request->send(200, "application/json", "{\"status\":\"initiated\"}");
 
-    }else {
-      logger("W:  Failed to connect to the new WiFi network. Keeping current connection.");
-      request->send(200, "application/json", "{\"status\":\"failed\"}");
-    }
-
-    
+    request->onDisconnect([]() {
+      delay(100);
+      if (newSSID.length() > 0 && newPw.length() > 0) {
+        changeWifi(newSSID, newPw);
+      }
+    });
   });
 
   server.on("/api/wifi/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -790,8 +791,6 @@ void notFound(AsyncWebServerRequest *request) {
 
 // Routing here
 void routing(AsyncWebServer &server) {
-
-  //server.addHandler(&events);
 
   setupStaticRoutes(server);
   setupMappingRoutes(server);

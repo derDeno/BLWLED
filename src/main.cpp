@@ -3,7 +3,6 @@
 #include <FastLED.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WiFiMulti.h>
 #include <time.h>
 
 #include "fs-helper.h"
@@ -28,6 +27,8 @@ int lastSwState = HIGH;
 
 unsigned long lastDebounceTime = 0;
 unsigned const long debounceDelay = 1000;
+
+bool blockWifi = false;
 
 
 void initState() {
@@ -109,14 +110,14 @@ void setup() {
     // setup events
     events.onConnect([](AsyncEventSourceClient *client) {
         client->send("hello!", NULL, millis(), 1000);
-        logger("Server Sent Events:     ok");
+        logger("Server Sent Events: ok");
     });
 
     // Start server
     routing(server);
     server.addHandler(&events);
     server.begin();
-    logger("HTTP server:            ok");
+    logger("HTTP server:  ok");
     logger(String(appConfig.name) + " is ready!");
 
     startupAnimation();
@@ -145,6 +146,8 @@ void loop() {
     lastSwState = reading;
 
     // all the loops
-    wifiLoop();
-    mqttLoop();
+    if(!blockWifi) {
+        wifiLoop();
+        mqttLoop();
+    }
 }
