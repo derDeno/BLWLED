@@ -183,7 +183,10 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     pLightOn = lightOn;
     pDoorOpen = doorOpen;
     pStgCur = print_stg_cur;
-    strcpy(pGcodeState, print_gcode_state);
+    
+    if(print_gcode_state != nullptr) {
+        strcpy(pGcodeState, print_gcode_state);
+    }
 }
 
 

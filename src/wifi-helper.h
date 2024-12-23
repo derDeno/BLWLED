@@ -30,19 +30,16 @@ void setupMDNS() {
         logger("E: Failed to start mDNS with fallback hostname!");
         return;
     }
-
-    MDNS.addService("http", "tcp", 80);
     delay(100);  // Allow mDNS to stabilize
 
     // Check if the preferred hostname is available
     if (static_cast<int>(MDNS.queryHost(preferredHostname)) == 0) {
         if (MDNS.begin(preferredHostname)) {
-            MDNS.addService("http", "tcp", 80);
             hostname = preferredHostname;
-            return;
         }
     }
 
+    MDNS.addService("http", "tcp", 80);
     logger("Hostname set to http://" + hostname + ".local");
 }
 
