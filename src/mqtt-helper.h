@@ -68,40 +68,40 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     // check for gcode state change
     switch (print_stg_cur) {
         case -1:
-            if(strcmp(print_gcode_state, "IDLE") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "IDLE") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 printIdleTime = millis();
                 eventBus(EVENT_PRINTER_IDLE);
 
-            } else if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            } else if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 // printer sent print file - no event specified yet
 
-            } else if(strcmp(print_gcode_state, "FINISH") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            } else if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "FINISH") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 printFinishedTime = millis();
                 eventBus(EVENT_PRINT_FINISHED);
             }
             break;
         case 0:
-            if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 eventBus(EVENT_PRINTING);
             }
             break;
         case 1:
-            if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 eventBus(EVENT_BED_LEVELING);
             }
             break;
         case 2:
-            if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 eventBus(EVENT_PREHEAT_BED);
             }
             break;
         case 8:
-            if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 eventBus(EVENT_EXTRUSION_CALIBRATION);
             }
             break;
         case 14:
-            if(strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
+            if(pGcodeState != nullptr && print_gcode_state != nullptr && strcmp(print_gcode_state, "RUNNING") == 0 && strcmp(pGcodeState, print_gcode_state) != 0) {
                 eventBus(EVENT_CLEANING_NOZZLE);
             }
             break;
@@ -111,7 +111,7 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
 
 
     // door state change while idle
-    if(pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "IDLE") == 0) {
+    if(print_gcode_state != nullptr && pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "IDLE") == 0) {
         if(pDoorOpen != doorOpen) {
             if(doorOpen) {
                 eventBus(EVENT_DOOR_OPEN_IDLE);
@@ -122,7 +122,7 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     }
 
     // door state change while printing
-    if(pStgCur == 0 && print_stg_cur == 0 && strcmp(print_gcode_state, "RUNNING") == 0) {
+    if(print_gcode_state != nullptr && pStgCur == 0 && print_stg_cur == 0 && strcmp(print_gcode_state, "RUNNING") == 0) {
         if(pDoorOpen != doorOpen) {
             if(doorOpen) {
                 eventBus(EVENT_DOOR_OPEN_PRINT);
@@ -133,7 +133,7 @@ void mqttListen(char* topic, byte* payload, unsigned int length) {
     }
 
     // door state change while finish
-    if(pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "FINISH") == 0) {
+    if(print_gcode_state != nullptr && pStgCur == -1 && print_stg_cur == -1 && strcmp(print_gcode_state, "FINISH") == 0) {
         if(pDoorOpen != doorOpen) {
             if(doorOpen) {
                 eventBus(EVENT_DOOR_OPEN_FINISH);
